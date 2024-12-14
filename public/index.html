@@ -3,22 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Game with Firebase</title>
-  <!-- Firebase SDK -->
+  <title>Card Game</title>
+  <link rel="stylesheet" href="styles.css">
   <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <!-- Custom Script -->
   <script defer src="main.js"></script>
 </head>
 <body>
-  <h1>Welcome to the Game!</h1>
-  <div>
-    <button id="createRoom">Create Room</button>
-    <input type="text" id="roomCode" placeholder="Enter room code">
-    <button id="joinRoom">Join Room</button>
-    <button id="startGame">Start Game</button>
+  <div id="game-container">
+    <div id="initial-screen">
+      <h1>Welcome to the Card Game!</h1>
+      <button id="create-room-btn">Create Room</button>
+      <button id="join-room-btn">Join Room</button>
+      <input type="text" id="room-code-input" placeholder="Enter Room Code">
+    </div>
+
+    <div id="room-screen" class="hidden">
+      <h2>Room Code: <span id="room-code-display"></span></h2>
+      <h3>Players:</h3>
+      <ul id="player-list"></ul>
+      <button id="start-game-btn" class="hidden">Start Game</button>
+      <p id="waiting-message" class="hidden">Waiting for the admin to start the game...</p>
+    </div>
+
+    <div id="game-screen" class="hidden">
+      <h2>Current Question:</h2>
+      <div id="current-question"></div>
+
+      <div id="cards-container">
+        <h3>Your Cards:</h3>
+        <div id="cards"></div>
+        <button id="confirm-response-btn" class="hidden">Confirm Response</button>
+      </div>
+
+      <div id="responses-container" class="hidden">
+        <h3>Submitted Responses:</h3>
+        <div id="responses"></div>
+        <button id="choose-winner-btn" class="hidden">Choose Winner</button>
+      </div>
+    </div>
   </div>
-  <div id="log"></div>
 </body>
 </html>

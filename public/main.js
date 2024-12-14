@@ -14,116 +14,108 @@ const firebaseConfig = {
   const auth = firebase.auth();
   const db = firebase.database();
   
-  // Log messages to the page
-  function logMessage(message) {
-    document.getElementById("log").innerHTML += `<p>${message}</p>`;
+  // DOM Elements
+  const initialScreen = document.getElementById("initial-screen");
+  const roomScreen = document.getElementById("room-screen");
+  const gameScreen = document.getElementById("game-screen");
+  
+  const createRoomBtn = document.getElementById("create-room-btn");
+  const joinRoomBtn = document.getElementById("join-room-btn");
+  const roomCodeInput = document.getElementById("room-code-input");
+  const roomCodeDisplay = document.getElementById("room-code-display");
+  const playerList = document.getElementById("player-list");
+  const startGameBtn = document.getElementById("start-game-btn");
+  const waitingMessage = document.getElementById("waiting-message");
+  
+  const currentQuestion = document.getElementById("current-question");
+  const cardsContainer = document.getElementById("cards-container");
+  const cards = document.getElementById("cards");
+  const confirmResponseBtn = document.getElementById("confirm-response-btn");
+  
+  const responsesContainer = document.getElementById("responses-container");
+  const responses = document.getElementById("responses");
+  const chooseWinnerBtn = document.getElementById("choose-winner-btn");
+  
+  // State
+  let roomCode = null;
+  let playerId = null;
+  let isHost = false;
+  
+  // Authentication
+  auth.signInAnonymously().then(() => {
+    playerId = auth.currentUser.uid;
+  });
+  
+  // Create Room
+  createRoomBtn.addEventListener("click", () => {
+    roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    isHost = true;
+  
+    db.ref(`rooms/${roomCode}`).set({
+      host: playerId,
+      players: {
+        [playerId]: {
+          name: generatePlayerName(),
+          deck: [],
+          wins: 0,
+          isAsking: false,
+          profilePicture: Math.floor(Math.random() * 10),
+        },
+      },
+      deckQuestions: [["Funny question", 1]],
+      deckAnswers: [["Answer 1", 0], ["Answer 2", 0]],
+      currentRound: null,
+      isRoundPlaying: false,
+    });
+  
+    switchToRoomScreen(roomCode);
+  });
+  
+  // Join Room
+  joinRoomBtn.addEventListener("click", () => {
+    roomCode = roomCodeInput.value.toUpperCase();
+    isHost = false;
+  
+    db.ref(`rooms/${roomCode}/players/${playerId}`).set({
+      name: generatePlayerName(),
+      deck: [],
+      wins: 0,
+      isAsking: false,
+      profilePicture: Math.floor(Math.random() * 10),
+    });
+  
+    switchToRoomScreen(roomCode);
+  });
+  
+  // Switch to Room Screen
+  function switchToRoomScreen(code) {
+    initialScreen.classList.add("hidden");
+    roomScreen.classList.remove("hidden");
+    roomCodeDisplay.textContent = code;
+  
+    db.ref(`rooms/${code}/players`).on("value", (snapshot) => {
+      playerList.innerHTML = "";
+      const players = snapshot.val();
+      for (const playerId in players) {
+        const li = document.createElement("li");
+        li.textContent = players[playerId].name;
+        playerList.appendChild(li);
+      }
+  
+      if (isHost) {
+        startGameBtn.classList.remove("hidden");
+        waitingMessage.classList.add("hidden");
+      } else {
+        startGameBtn.classList.add("hidden");
+        waitingMessage.classList.remove("hidden");
+      }
+    });
   }
   
-  // Anonymous authentication
-  auth.signInAnonymously()
-    .then(() => {
-      const uid = auth.currentUser.uid;
-      logMessage(`Authenticated as UID: ${uid}`);
-    })
-    .catch((error) => logMessage(`Authentication error: ${error.message}`));
-  
-  // Generate random player name
+  // Generate Random Player Name
   function generatePlayerName() {
-    const adjectives = ["Fast", "Silly", "Brave", "Cool", "Smart"];
-    const nouns = ["Bear", "Cat", "Fox", "Duck", "Llama"];
+    const adjectives = ["Fast", "Silly", "Brave"];
+    const nouns = ["Cat", "Fox", "Bear"];
     return `${adjectives[Math.floor(Math.random() * adjectives.length)]} ${nouns[Math.floor(Math.random() * nouns.length)]}`;
   }
-  
-  // Create room
-  function createRoom() {
-    const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const hostUid = auth.currentUser.uid;
-  
-    const room = {
-      host: hostUid,
-      players: {},
-      deckQuestions: [["What's the funniest thing you've ever done?", 1]],
-      deckAnswers: [["Hilarious answer", 0], ["Creative response", 0]],
-      roundsPlayed: 0,
-      lastWinner: null,
-      isRoundPlaying: false,
-      currentRound: {}
-    };
-  
-    const player = {
-      name: generatePlayerName(),
-      deck: [],
-      wins: 0,
-      isAsking: false,
-      profilePicture: Math.floor(Math.random() * 10)
-    };
-  
-    db.ref(`rooms/${roomCode}`).set(room)
-      .then(() => {
-        return db.ref(`rooms/${roomCode}/players/${hostUid}`).set(player);
-      })
-      .then(() => {
-        logMessage(`Room created with code: ${roomCode}. You have been added as a player.`);
-      })
-      .catch((error) => logMessage(`Room creation error: ${error.message}`));
-  }
-  
-  // Join a room
-  function joinRoom() {
-    const roomCode = document.getElementById("roomCode").value;
-    const uid = auth.currentUser.uid;
-  
-    const player = {
-      name: generatePlayerName(),
-      deck: [],
-      wins: 0,
-      isAsking: false,
-      profilePicture: Math.floor(Math.random() * 10)
-    };
-  
-    db.ref(`rooms/${roomCode}/players/${uid}`).set(player)
-      .then(() => logMessage(`Joined room ${roomCode} as ${player.name}`))
-      .catch((error) => logMessage(`Join room error: ${error.message}`));
-  }
-  
-  // Start game
-  function startGame() {
-    const roomCode = document.getElementById("roomCode").value;
-  
-    db.ref(`rooms/${roomCode}`).once("value")
-      .then((snapshot) => {
-        const room = snapshot.val();
-        const deckAnswers = [...room.deckAnswers];
-  
-        Object.keys(room.players).forEach((uid) => {
-          const playerCards = [];
-          for (let i = 0; i < 11; i++) {
-            playerCards.push(deckAnswers.pop());
-          }
-          db.ref(`rooms/${roomCode}/players/${uid}/deck`).set(playerCards);
-        });
-  
-        const currentRound = {
-          questionMaster: room.host,
-          question: room.deckQuestions.pop(),
-          responses: [],
-          chosenResponse: null
-        };
-  
-        db.ref(`rooms/${roomCode}`).update({
-          deckAnswers,
-          deckQuestions: room.deckQuestions,
-          currentRound,
-          isRoundPlaying: true
-        });
-  
-        logMessage("Game started!");
-      })
-      .catch((error) => logMessage(`Start game error: ${error.message}`));
-  }
-  
-  // Event listeners
-  document.getElementById("createRoom").addEventListener("click", createRoom);
-  document.getElementById("joinRoom").addEventListener("click", joinRoom);
-  document.getElementById("startGame").addEventListener("click", startGame);
   
