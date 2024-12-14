@@ -185,6 +185,25 @@ function switchToRoomScreen(code) {
   roomScreen.classList.remove("hidden");
   roomCodeDisplay.textContent = code;
 
+  // Check if user is Admin
+  db.ref(`rooms/${code}`).once("value").then(snapshot => {
+    const room = snapshot.val();
+    startGameBtn.classList.add("hidden");
+      waitingMessage.classList.remove("hidden");
+
+    console.log("me:", playerId, "admin:", room.host)
+    if (playerId === room.host) {
+      console.log("è host")
+      startGameBtn.classList.remove("hidden");
+      waitingMessage.classList.add("hidden");
+    } else {
+      console.log("NOT host")
+      startGameBtn.classList.add("hidden");
+      waitingMessage.classList.remove("hidden");
+    }
+  });
+
+  // Listener per aggiornare l'elenco dei giocatori
   db.ref(`rooms/${code}/players`).on("value", (snapshot) => {
     playerList.innerHTML = "";
     const players = snapshot.val();
@@ -193,16 +212,9 @@ function switchToRoomScreen(code) {
       li.textContent = players[playerId].name;
       playerList.appendChild(li);
     }
-
-    if (isHost) {
-      startGameBtn.classList.remove("hidden");
-      waitingMessage.classList.add("hidden");
-    } else {
-      startGameBtn.classList.add("hidden");
-      waitingMessage.classList.remove("hidden");
-    }
   });
 }
+
 
 
 

@@ -67,8 +67,3 @@ button:hover {
   font-weight: bold;
   margin-bottom: 10px;
 }
-
-#start-game-btn {
-  display: block;
-  margin: 20px auto;
-}
