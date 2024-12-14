@@ -225,10 +225,8 @@ function showQuestionAndAnswers() {
 
 // Generate Random Player Name
 function generatePlayerName() {
-  const adjectives = ["Fast", "Silly", "Brave"];
-  const nouns = ["Cat", "Fox", "Bear"];
-  return `${adjectives[Math.floor(Math.random() * adjectives.length)]} ${
-    nouns[Math.floor(Math.random() * nouns.length)]
+  return `${nounsAndAdjectives.names[Math.floor(Math.random() * nounsAndAdjectives.names.length)]} ${
+    nounsAndAdjectives.adjectives[Math.floor(Math.random() * nounsAndAdjectives.adjectives.length)]
   }`;
 }
 
@@ -983,3 +981,61 @@ const decks = {
     ["Urlare 'Teresaaaa' davanti a un giornalista", 0],
   ],
 };
+
+const nounsAndAdjectives = {
+  names : [
+    "Gianfranco",
+    "Petunia",
+    "Matilda",
+    "Gesù",
+    "Patrizia",
+    "Anastasia",
+    "Tancredi",
+    "Geltrude",
+    "Stefania",
+    "Sandrina",
+    "Gervasio",
+    "Tibetino",
+    "Filiberto",
+    "Demetra",
+    "Carlina",
+    "Peppone",
+    "Brumilda",
+    "Ermenegilda",
+    "Loretta",
+    "Juan",
+    "Carmeletto",
+    "Asdrubale",
+    "Osvaldo",
+    "Moreno",
+    "Gilberto",
+    "Lucresia"
+  ],
+  adjectives : [
+    "Vibrante",
+    "Eccitante",
+    "Segante",
+    "Scopante",
+    "Cagarellante",
+    "Macchiante",
+    "Incontinente",
+    "Gemente",
+    "Performante",
+    "Sniffante",
+    "Folgorante",
+    "Gocciolante",
+    "Rizzante",
+    "Scompisciante",
+    "Sburrante",
+    "Ninfomane",
+    "Abominevole",
+    "Gigante",
+    "Piacevole",
+    "Sensuale",
+    "Omosessuale",
+    "Petulante",
+    "Pizzicolante",
+    "Orgasmante",
+    "Vegetante"
+  ]
+}
