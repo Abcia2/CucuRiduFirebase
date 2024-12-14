@@ -235,49 +235,69 @@ function generatePlayerName() {
 
 
 // Pesca carte
-function drawCardsFromDeck(deck, count) {
+function drawCardsFromDeck(deckPath, count) {
   const drawnCards = [];
-  for (let i = 0; i < count; i++) {
-    drawnCards.push(deck.pop()); // Rimuove e aggiunge l'elemento all'array
-  }
 
-  // Aggiorna il database con l'array modificato
-  roomRef.update({
-    deckQuestions: deck
+  return roomRef.child(deckPath).transaction((currentDeck) => {
+    if (currentDeck && currentDeck.length >= count) {
+      // Estrai le carte dalla fine del mazzo
+      drawnCards.push(...currentDeck.slice(-count));
+      // Rimuovi le carte pescate dal mazzo
+      return currentDeck.slice(0, -count);
+    } else {
+      console.error("Not enough cards in the deck!");
+      return currentDeck; // Ritorna il mazzo originale se non ci sono abbastanza carte
+    }
+  }).then(() => {
+    return drawnCards; // Restituisci le carte pescate
+  }).catch((error) => {
+    console.error("Error drawing cards:", error);
+    return [];
   });
-
-  return drawnCards; // Restituisce i valori estratti
 }
-function drawQuestion(deckQuestions) {
-  const question = deckQuestions.pop(); // Rimuove e restituisce l'ultimo elemento
-
-  // Aggiorna il database con l'array modificato
-  roomRef.update({
-    deckQuestions: deckQuestions
+function drawQuestion() {
+  return roomRef.child('deckQuestions').transaction((currentDeck) => {
+    if (currentDeck && currentDeck.length > 0) {
+      // Estrai l'ultima domanda
+      return currentDeck.slice(0, -1);
+    } else {
+      console.error("No more questions in the deck!");
+      return currentDeck;
+    }
+  }).then((result) => {
+    const question = result.snapshot.val().slice(-1)[0];
+    console.log("Question drawn:", question);
+    return question;
+  }).catch((error) => {
+    console.error("Error drawing question:", error);
+    return null;
   });
-
-  return question; // Restituisce la domanda estratta
 }
+
 
 
 function assignInitialCardsToPlayers(roomId) {
   const roomRef = firebase.database().ref('rooms/' + roomId);
-  
-  // Ottieni i giocatori
-  roomRef.child('players').once('value').then(snapshot => {
+
+  roomRef.child('players').once('value').then((snapshot) => {
     const players = snapshot.val();
 
-    for (let playerId in players) {
-      const playerRef = roomRef.child(`players/${playerId}`);
-      
-      // Togliere 11 carte dal mazzo delle risposte
-      const cards = drawCardsFromDeck(decks.deckAnswers, 11);
-      
-      // Aggiorna il giocatore con il nuovo mazzo
-      playerRef.update({ deck: cards });
-    }
+    const promises = Object.keys(players).map((playerId) => {
+      return drawCardsFromDeck('deckAnswers', 11).then((cards) => {
+        return roomRef.child(`players/${playerId}`).update({
+          deck: cards,
+        });
+      });
+    });
+
+    return Promise.all(promises);
+  }).then(() => {
+    console.log("Initial cards assigned to all players.");
+  }).catch((error) => {
+    console.error("Error assigning cards:", error);
   });
 }
+
 
 /* UI */
 // Admin Start Game
