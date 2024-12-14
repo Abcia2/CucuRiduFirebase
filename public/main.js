@@ -52,6 +52,15 @@ function loadDecks() {
   });
 }
 
+// Funzione per mescolare un array
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+
 // Authentication
 auth.signInAnonymously().then(() => {
   playerId = auth.currentUser.uid;
@@ -61,6 +70,8 @@ auth.signInAnonymously().then(() => {
 createRoomBtn.addEventListener("click", () => {
   loadDecks().then((decks) => {
     roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    shuffleArray(decks.deckQuestions);
+    shuffleArray(decks.deckAnswers);
     isHost = true;
 
     db.ref(`rooms/${roomCode}`).set({
@@ -133,6 +144,19 @@ function generatePlayerName() {
     nouns[Math.floor(Math.random() * nouns.length)]
   }`;
 }
+
+
+// Pesca carte
+function drawCardsFromDeck(deck, count) {
+  return deck.splice(0, count);
+}
+
+
+function drawQuestion(deckQuestions) {
+  return deckQuestions.shift();
+}
+
+
 
 const decks = {
   deckQuestions: [
