@@ -49,6 +49,7 @@ let roomCode = null;
 let playerId = null;
 let isHost = false;
 let roomRef  = null;
+let playerRef = null;
 
 
 
@@ -307,7 +308,7 @@ startGameBtn.addEventListener("click", () => {
   startGame()
 });
 
-// Carte
+// Carte e nomi
 /*Const decks (è troppo lunga per inserirla qui.)
  è fatta cosi:
 
@@ -319,7 +320,13 @@ startGameBtn.addEventListener("click", () => {
     ["Risposta molto funny", 0],
     ...]
 */
+/* la const nounsAndAdjectives (è troppo lunga per inserirla qui.)
+è fatta cosi:
 
+ {
+  names : ["nome", "nome" ...],
+  adjectives : ["adjective", [adjective] ...]
+*/
 
 const decks = {
   deckQuestions: [
