@@ -10,10 +10,14 @@ const firebaseConfig = {
   appId: "1:247195463484:web:a2b363e18fadd979343839",
 };
 
+
+
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
+
+
 
 // DOM Elements
 const initialScreen = document.getElementById("initial-screen");
@@ -37,10 +41,14 @@ const responsesContainer = document.getElementById("responses-container");
 const responses = document.getElementById("responses");
 const chooseWinnerBtn = document.getElementById("choose-winner-btn");
 
+
+
 // State
 let roomCode = null;
 let playerId = null;
 let isHost = false;
+
+
 
 // Funzione per caricare i deck
 function loadDecks() {
@@ -52,6 +60,8 @@ function loadDecks() {
   });
 }
 
+
+
 // Funzione per mescolare un array
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -61,10 +71,13 @@ function shuffleArray(array) {
 }
 
 
+
 // Authentication
 auth.signInAnonymously().then(() => {
   playerId = auth.currentUser.uid;
 });
+
+
 
 // Create Room
 createRoomBtn.addEventListener("click", () => {
@@ -95,6 +108,8 @@ createRoomBtn.addEventListener("click", () => {
   });
 });
 
+
+
 // Join Room
 joinRoomBtn.addEventListener("click", () => {
   roomCode = roomCodeInput.value.toUpperCase();
@@ -110,6 +125,8 @@ joinRoomBtn.addEventListener("click", () => {
 
   switchToRoomScreen(roomCode);
 });
+
+
 
 // Switch to Room Screen
 function switchToRoomScreen(code) {
@@ -136,6 +153,8 @@ function switchToRoomScreen(code) {
   });
 }
 
+
+
 // Generate Random Player Name
 function generatePlayerName() {
   const adjectives = ["Fast", "Silly", "Brave"];
@@ -146,18 +165,18 @@ function generatePlayerName() {
 }
 
 
+
 // Pesca carte
 function drawCardsFromDeck(deck, count) {
   return deck.splice(0, count);
 }
-
-
 function drawQuestion(deckQuestions) {
   return deckQuestions.shift();
 }
 
 
 
+// Carte
 const decks = {
   deckQuestions: [
     ["_ è buono, ma _ è molto meglio!", 2],
