@@ -1,27 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gioco con Firebase</title>
-
-    <!-- Firebase SDKs classici -->
-    <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-    <!-- Il tuo file JavaScript -->
-    <script defer src="index.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game with Firebase</title>
+  <!-- Firebase SDK -->
+  <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <!-- Custom Script -->
+  <script defer src="main.js"></script>
 </head>
 <body>
-    <div id="app">
-        <h1>Benvenuto al gioco!</h1>
-        <button id="authButton">Accedi Anonimamente</button>
-        <button id="createRoom">Crea Stanza</button>
-        <button id="joinRoom">Entra in una Stanza</button>
-        <button id="quitRoom">Esci da una Stanza</button>
-        <div id="output"></div>
-    </div>
+  <h1>Welcome to the Game!</h1>
+  <div>
+    <button id="createRoom">Create Room</button>
+    <input type="text" id="roomCode" placeholder="Enter room code">
+    <button id="joinRoom">Join Room</button>
+    <button id="startGame">Start Game</button>
+  </div>
+  <div id="log"></div>
 </body>
 </html>
-
