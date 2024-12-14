@@ -237,14 +237,15 @@ function drawCardsFromDeck(deckPath, count) {
   const drawnCards = [];
 
   return roomRef.child(deckPath).transaction((currentDeck) => {
-    if (currentDeck && currentDeck.length >= count) {
-      // Estrai le carte dalla fine del mazzo
-      drawnCards.push(...currentDeck.slice(-count));
+    console.log("Current Deck:", currentDeck);
+    if (Array.isArray(currentDeck) && currentDeck.length >= count) {
+      // Estrai le ultime `count` carte
+      drawnCards.push(...currentDeck.slice(-count).map(card => [...card]));
       // Rimuovi le carte pescate dal mazzo
       return currentDeck.slice(0, -count);
     } else {
-      console.error("Not enough cards in the deck!");
-      return currentDeck; // Ritorna il mazzo originale se non ci sono abbastanza carte
+      console.error("Not enough cards in the deck or invalid deck structure!");
+      return currentDeck || []; // Ritorna il mazzo originale o un array vuoto
     }
   }).then(() => {
     return drawnCards; // Restituisci le carte pescate
@@ -254,23 +255,26 @@ function drawCardsFromDeck(deckPath, count) {
   });
 }
 function drawQuestion() {
+  let drawnQuestion = null;
+
   return roomRef.child('deckQuestions').transaction((currentDeck) => {
-    if (currentDeck && currentDeck.length > 0) {
+    console.log("Current Questions Deck:", currentDeck);
+    if (Array.isArray(currentDeck) && currentDeck.length > 0) {
       // Estrai l'ultima domanda
-      return currentDeck.slice(0, -1);
+      drawnQuestion = [...currentDeck.slice(-1)[0]];
+      return currentDeck.slice(0, -1); // Rimuovi la domanda pescata
     } else {
-      console.error("No more questions in the deck!");
-      return currentDeck;
+      console.error("No more questions in the deck or invalid deck structure!");
+      return currentDeck || []; // Ritorna il mazzo originale o un array vuoto
     }
-  }).then((result) => {
-    const question = result.snapshot.val().slice(-1)[0];
-    console.log("Question drawn:", question);
-    return question;
+  }).then(() => {
+    return drawnQuestion; // Restituisci la domanda pescata
   }).catch((error) => {
     console.error("Error drawing question:", error);
     return null;
   });
 }
+
 
 
 
