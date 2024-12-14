@@ -172,28 +172,10 @@ function startGame() {
     }
   });
 
-  console.log("iniziato")
-  //notifyPlayersRoundStarted();
+  console.log("RoundStarted")
 }
 
-function notifyPlayersRoundStarted() {
-  // Ottieni una referenza alla stanza corrente
-  const roomRef = db.ref('rooms/' + roomId + '/players');
-  
-  // Notifica a tutti i giocatori che il round è iniziato
-  roomRef.once('value', snapshot => {
-    snapshot.forEach(playerSnapshot => {
-      const playerUid = playerSnapshot.key;
 
-      // Invia un aggiornamento al giocatore specifico
-      console.log("datiRicevuti")
-      db.ref('rooms/' + roomId + '/players/' + playerUid).update({
-        isRoundPlaying: true,             // Indica che il round è iniziato
-        currentRound: true                // Puoi anche passare i dati del round se necessario
-      });
-    });
-  });
-}
 
 // Funzione per monitorare costantemente isRoundPlaying
 function monitorIsRoundPlaying() {
@@ -304,20 +286,20 @@ function drawCardsFromDeck(deckPath, count) {
   const drawnCards = [];
 
   return roomRef.child(deckPath).transaction((currentDeck) => {
-    console.log("Current Deck:", currentDeck);
+    //console.log("Current Deck:", currentDeck);
     if (Array.isArray(currentDeck) && currentDeck.length >= count) {
       // Estrai le ultime `count` carte
       drawnCards.push(...currentDeck.slice(-count).map(card => [...card]));
       // Rimuovi le carte pescate dal mazzo
       return currentDeck.slice(0, -count);
     } else {
-      console.error("Not enough cards in the deck or invalid deck structure!");
+      //console.error("Not enough cards in the deck or invalid deck structure!");
       return currentDeck || []; // Ritorna il mazzo originale o un array vuoto
     }
   }).then(() => {
     return drawnCards; // Restituisci le carte pescate
   }).catch((error) => {
-    console.error("Error drawing cards:", error);
+    //console.error("Error drawing cards:", error);
     return [];
   });
 }
@@ -325,13 +307,13 @@ function drawQuestion() {
   let drawnQuestion = null;
 
   return roomRef.child('deckQuestions').transaction((currentDeck) => {
-    console.log("Current Questions Deck:", currentDeck);
+    //console.log("Current Questions Deck:", currentDeck);
     if (Array.isArray(currentDeck) && currentDeck.length > 0) {
       // Estrai l'ultima domanda
       drawnQuestion = [...currentDeck.slice(-1)[0]];
       return currentDeck.slice(0, -1); // Rimuovi la domanda pescata
     } else {
-      console.error("No more questions in the deck or invalid deck structure!");
+      //console.error("No more questions in the deck or invalid deck structure!");
       return currentDeck || []; // Ritorna il mazzo originale o un array vuoto
     }
   }).then(() => {
