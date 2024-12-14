@@ -16,7 +16,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
-let  GlobalRoomRef  = null;
+
 
 
 
@@ -48,6 +48,7 @@ const chooseWinnerBtn = document.getElementById("choose-winner-btn");
 let roomCode = null;
 let playerId = null;
 let isHost = false;
+let roomRef  = null;
 
 
 
@@ -88,9 +89,9 @@ createRoomBtn.addEventListener("click", () => {
     shuffleArray(decks.deckAnswers);
     isHost = true;
 
-    GlobalRoomRef = db.ref(`rooms/${roomCode}`);
+    roomRef = firebase.database().ref('rooms/' + roomCode);
 
-    GlobalRoomRef.set({
+    roomRef.set({
       host: playerId,
       players: {
         [playerId]: {
@@ -123,9 +124,9 @@ joinRoomBtn.addEventListener("click", () => {
   // Check if the room is waiting to start
   db.ref(`rooms/${roomCode}/isStartWaiting`).once('value', (snapshot) => {
     if (snapshot.val() === true) {
-      GlobalRoomRef = db.ref(`rooms/${roomCode}`);
+      roomRef = firebase.database().ref('rooms/' + roomCode);
 
-      GlobalRoomRef.child(`players/${playerId}`).set({
+      roomRef.child(`players/${playerId}`).set({
         name: generatePlayerName(),
         deck: [],
         wins: 0,
@@ -146,8 +147,6 @@ joinRoomBtn.addEventListener("click", () => {
 
 function startGame() {
   console.log("inizio");
-  console.log(roomCode)
-  const roomRef = firebase.database().ref('rooms/' + roomCode);
 
   // Aggiorna la stanza impostando isWaiting a false e l'admin come currentQuestioner
   roomRef.update({
@@ -207,7 +206,6 @@ function switchToRoomScreen(code) {
 
 
 function showQuestionAndAnswers() {
-  const roomRef = firebase.database().ref('rooms/' + roomCode);
   
   // Ottieni la stanza
   roomRef.once('value').then(snapshot => {
@@ -216,8 +214,9 @@ function showQuestionAndAnswers() {
 
     // Mostra la domanda e le risposte a chi deve rispondere
     if (currentQuestionerUid === playerId) {
-      document.getElementById('question').innerText = currentQuestion.currentQuestion;
-      document.getElementById('answer-section').style.display = 'block'; // Mostra la UI di risposta
+      console.log(currentQuestion.currentQuestion)
+      //document.getElementById('question').innerText = currentQuestion.currentQuestion;
+      //document.getElementById('answer-section').style.display = 'block'; // Mostra la UI di risposta
     }
   });
 }
@@ -237,11 +236,30 @@ function generatePlayerName() {
 
 // Pesca carte
 function drawCardsFromDeck(deck, count) {
-  return deck.splice(0, count);
+  const drawnCards = [];
+  for (let i = 0; i < count; i++) {
+    drawnCards.push(deck.pop()); // Rimuove e aggiunge l'elemento all'array
+  }
+
+  // Aggiorna il database con l'array modificato
+  roomRef.update({
+    deckQuestions: deck
+  });
+
+  return drawnCards; // Restituisce i valori estratti
 }
 function drawQuestion(deckQuestions) {
-  return deckQuestions.shift();
+  const question = deckQuestions.pop(); // Rimuove e restituisce l'ultimo elemento
+
+  // Aggiorna il database con l'array modificato
+  roomRef.update({
+    deckQuestions: deckQuestions
+  });
+
+  return question; // Restituisce la domanda estratta
 }
+
+
 function assignInitialCardsToPlayers(roomId) {
   const roomRef = firebase.database().ref('rooms/' + roomId);
   
@@ -261,14 +279,26 @@ function assignInitialCardsToPlayers(roomId) {
   });
 }
 
-// UI
-
+/* UI */
 // Admin Start Game
 startGameBtn.addEventListener("click", () => {
   startGame()
 });
 
 // Carte
+/*Const decks (è troppo lunga per inserirla qui.)
+ è fatta cosi:
+
+  const decks = {
+    deckQuestions: [
+      ["_ è buono, ma _ è molto meglio!", 2],
+      ...],
+  deckAnswers: [
+    ["Risposta molto funny", 0],
+    ...]
+*/
+
+
 const decks = {
   deckQuestions: [
     ["_ è buono, ma _ è molto meglio!", 2],
