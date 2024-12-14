@@ -16,6 +16,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
+let  GlobalRoomRef  = null;
 
 
 
@@ -87,7 +88,9 @@ createRoomBtn.addEventListener("click", () => {
     shuffleArray(decks.deckAnswers);
     isHost = true;
 
-    db.ref(`rooms/${roomCode}`).set({
+    GlobalRoomRef = db.ref(`rooms/${roomCode}`);
+
+    GlobalRoomRef.set({
       host: playerId,
       players: {
         [playerId]: {
@@ -102,6 +105,7 @@ createRoomBtn.addEventListener("click", () => {
       deckAnswers: decks.deckAnswers,
       currentRound: null,
       isRoundPlaying: false,
+      isStartWaiting: true,
     });
 
     switchToRoomScreen(roomCode);
@@ -110,21 +114,68 @@ createRoomBtn.addEventListener("click", () => {
 
 
 
+
 // Join Room
 joinRoomBtn.addEventListener("click", () => {
   roomCode = roomCodeInput.value.toUpperCase();
   isHost = false;
 
-  db.ref(`rooms/${roomCode}/players/${playerId}`).set({
-    name: generatePlayerName(),
-    deck: [],
-    wins: 0,
-    isAsking: false,
-    profilePicture: Math.floor(Math.random() * 10),
+  // Check if the room is waiting to start
+  db.ref(`rooms/${roomCode}/isStartWaiting`).once('value', (snapshot) => {
+    if (snapshot.val() === true) {
+      GlobalRoomRef = db.ref(`rooms/${roomCode}`);
+
+      GlobalRoomRef.child(`players/${playerId}`).set({
+        name: generatePlayerName(),
+        deck: [],
+        wins: 0,
+        isAsking: false,
+        profilePicture: Math.floor(Math.random() * 10),
+      });
+
+      switchToRoomScreen(roomCode);
+    } else {
+      alert("The room is not waiting to start. Please wait until the admin starts the game.");
+    }
+  });
+});
+
+
+
+
+
+function startGame() {
+  console.log("inizio");
+  console.log(roomCode)
+  const roomRef = firebase.database().ref('rooms/' + roomCode);
+
+  // Aggiorna la stanza impostando isWaiting a false e l'admin come currentQuestioner
+  roomRef.update({
+    isWaiting: false,
+    currentQuestioner: playerId
   });
 
-  switchToRoomScreen(roomCode);
-});
+  // Assegna a tutti i giocatori le 11 carte risposta
+  assignInitialCardsToPlayers(roomCode);
+
+  // Scegli la prima domanda
+  const currentQuestion = drawQuestion(decks.deckQuestions);
+
+  // Aggiorna la stanza con la domanda corrente
+  roomRef.update({
+    currentRound: {
+      currentQuestion: currentQuestion[0],
+      blanks: currentQuestion[1],
+      answers: [],
+      winner: null
+    }
+  });
+
+  // Mostra la UI a chi deve rispondere
+  showQuestionAndAnswers(roomCode, currentQuestion);
+}
+
+
 
 
 
@@ -155,6 +206,24 @@ function switchToRoomScreen(code) {
 
 
 
+function showQuestionAndAnswers(roomId, currentQuestion) {
+  const roomRef = firebase.database().ref('rooms/' + roomId);
+  
+  // Ottieni la stanza
+  roomRef.once('value').then(snapshot => {
+    const room = snapshot.val();
+    const currentQuestionerUid = room.currentQuestioner;
+
+    // Mostra la domanda e le risposte a chi deve rispondere
+    if (currentQuestionerUid === currentUserUid) {
+      document.getElementById('question').innerText = currentQuestion.currentQuestion;
+      document.getElementById('answer-section').style.display = 'block'; // Mostra la UI di risposta
+    }
+  });
+}
+
+
+
 // Generate Random Player Name
 function generatePlayerName() {
   const adjectives = ["Fast", "Silly", "Brave"];
@@ -173,8 +242,31 @@ function drawCardsFromDeck(deck, count) {
 function drawQuestion(deckQuestions) {
   return deckQuestions.shift();
 }
+function assignInitialCardsToPlayers(roomId) {
+  const roomRef = firebase.database().ref('rooms/' + roomId);
+  
+  // Ottieni i giocatori
+  roomRef.child('players').once('value').then(snapshot => {
+    const players = snapshot.val();
 
+    for (let playerId in players) {
+      const playerRef = roomRef.child(`players/${playerId}`);
+      
+      // Togliere 11 carte dal mazzo delle risposte
+      const cards = drawCardsFromDeck(decks.deckAnswers, 11);
+      
+      // Aggiorna il giocatore con il nuovo mazzo
+      playerRef.update({ deck: cards });
+    }
+  });
+}
 
+// UI
+
+// Admin Start Game
+startGameBtn.addEventListener("click", () => {
+  startGame()
+});
 
 // Carte
 const decks = {
