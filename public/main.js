@@ -206,8 +206,8 @@ function switchToRoomScreen(code) {
 
 
 
-function showQuestionAndAnswers(roomId, currentQuestion) {
-  const roomRef = firebase.database().ref('rooms/' + roomId);
+function showQuestionAndAnswers() {
+  const roomRef = firebase.database().ref('rooms/' + roomCode);
   
   // Ottieni la stanza
   roomRef.once('value').then(snapshot => {
@@ -215,7 +215,7 @@ function showQuestionAndAnswers(roomId, currentQuestion) {
     const currentQuestionerUid = room.currentQuestioner;
 
     // Mostra la domanda e le risposte a chi deve rispondere
-    if (currentQuestionerUid === currentUserUid) {
+    if (currentQuestionerUid === playerId) {
       document.getElementById('question').innerText = currentQuestion.currentQuestion;
       document.getElementById('answer-section').style.display = 'block'; // Mostra la UI di risposta
     }
