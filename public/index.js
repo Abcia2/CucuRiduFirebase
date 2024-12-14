@@ -1,14 +1,14 @@
 // Configurazione Firebase
 const firebaseConfig = {
-        apiKey: "AIzaSyAQUgK7BeCqwVyG-yf9_sMxaXf-2XXdl-I",
-        authDomain: "cucu-ridu.firebaseapp.com",
-        databaseURL: "https://cucu-ridu-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "cucu-ridu",
-        storageBucket: "cucu-ridu.firebasestorage.app",
-        messagingSenderId: "247195463484",
-        appId: "1:247195463484:web:a2b363e18fadd979343839"
-    };
-    
+    apiKey: "AIzaSyAQUgK7BeCqwVyG-yf9_sMxaXf-2XXdl-I",
+    authDomain: "cucu-ridu.firebaseapp.com",
+    databaseURL: "https://cucu-ridu-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "cucu-ridu",
+    storageBucket: "cucu-ridu.firebasestorage.app",
+    messagingSenderId: "247195463484",
+    appId: "1:247195463484:web:a2b363e18fadd979343839"
+};
+
 // Inizializza Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -43,7 +43,7 @@ auth.onAuthStateChanged(user => {
             id: uid,
             name: playerName,
             room: GlobalRoomCode,
-            deck: [],
+deck: [],
             isAsking: false 
         })
 
