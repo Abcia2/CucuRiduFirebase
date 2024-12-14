@@ -136,6 +136,7 @@ joinRoomBtn.addEventListener("click", () => {
       });
 
       switchToRoomScreen(roomCode);
+      monitorIsRoundPlaying();
     } else {
       alert("The room is not waiting to start. Please wait until the admin starts the game.");
     }
@@ -145,37 +146,90 @@ joinRoomBtn.addEventListener("click", () => {
 
 
 
-
+// Start game
 function startGame() {
   console.log("inizio");
 
   // Aggiorna la stanza impostando isWaiting a false e l'admin come currentQuestioner
   roomRef.update({
-    isWaiting: false,
+    isStartWaiting: false,
     currentQuestioner: playerId
   });
 
   // Assegna a tutti i giocatori le 11 carte risposta
   assignInitialCardsToPlayers(roomCode);
 
-  // Scegli la prima domanda
-  const currentQuestion = drawQuestion(decks.deckQuestions);
+  // Pesca una domanda e aggiorna la stanza con la domanda corrente
+  const currentQuestion = drawQuestion(); // Fai il tuo metodo drawQuestion
 
-  // Aggiorna la stanza con la domanda corrente
   roomRef.update({
+    isRoundPlaying: true,
+    roundPhase: 1, 
     currentRound: {
-      currentQuestion: currentQuestion[0],
-      blanks: currentQuestion[1],
+      currentQuestion: currentQuestion,  // ["domanda" , n spazi vuoti]
       answers: [],
       winner: null
     }
   });
 
-  // Mostra la UI a chi deve rispondere
-  showQuestionAndAnswers(roomCode, currentQuestion);
+  console.log("iniziato")
+  //notifyPlayersRoundStarted();
+}
+
+function notifyPlayersRoundStarted() {
+  // Ottieni una referenza alla stanza corrente
+  const roomRef = db.ref('rooms/' + roomId + '/players');
+  
+  // Notifica a tutti i giocatori che il round è iniziato
+  roomRef.once('value', snapshot => {
+    snapshot.forEach(playerSnapshot => {
+      const playerUid = playerSnapshot.key;
+
+      // Invia un aggiornamento al giocatore specifico
+      console.log("datiRicevuti")
+      db.ref('rooms/' + roomId + '/players/' + playerUid).update({
+        isRoundPlaying: true,             // Indica che il round è iniziato
+        currentRound: true                // Puoi anche passare i dati del round se necessario
+      });
+    });
+  });
+}
+
+// Funzione per monitorare costantemente isRoundPlaying
+function monitorIsRoundPlaying() {
+  const roomRef = db.ref('rooms/' + roomCode);
+
+  // Ascolta i cambiamenti di isRoundPlaying
+  roomRef.child('isRoundPlaying').on('value', snapshot => {
+    if (snapshot.val() === true) {
+      // Il round è iniziato, fai qualcosa per notificare i giocatori
+      console.log("RoundStarted")
+    }
+  });
 }
 
 
+
+
+
+// Show question and answers
+function showQuestionAndAnswers() {
+  roomRef.once('value').then(snapshot => {
+    const room = snapshot.val();
+    const currentQuestionerUid = room.currentQuestioner;
+
+    if (currentQuestionerUid === playerId) {
+      // Visualizza le risposte anonime
+      db.ref(`rooms/${roomCode}/currentRound/answers`).once("value", snapshot => {
+        const answers = snapshot.val();
+        console.log("Answers:", answers);
+
+        // Mostra le risposte a chi fa la domanda
+        // Qui puoi gestire il UI per mostrare le risposte anonime
+      });
+    }
+  });
+}
 
 
 
