@@ -52,6 +52,7 @@ const WaitUiAdminText = document.getElementById("WaitUiAdminText");
 const WaitUiAdminButton = document.getElementById("WaitUiAdminButton");
 
 const AnswerCardText = document.getElementById("AnswerCardText");
+const AnswerSelectorCon = document.getElementById("AnswerSelectorCon");
 
 const roomCodeInput = document.getElementById("room-code-input");
 const roomCodeDisplay = document.getElementById("room-code-display");
@@ -235,7 +236,7 @@ function loadChooseAnswersUI() {
   // Recupera i dati della stanza
   roomRef.once("value", (snapshot) => {
     const roomData = snapshot.val();
-    console.log("roomDta: ",roomData);
+    console.log("roomData: ", roomData);
 
     if (!roomData) {
       console.error("Room data not found!");
@@ -243,7 +244,7 @@ function loadChooseAnswersUI() {
     }
 
     const currentQuestioner = roomData.currentQuestioner; // Chi fa la domanda
-    const currentQuestion = roomData.currentQuestion; // La domanda attuale
+    const currentQuestion = roomData.currentRound?.currentQuestion; // La domanda attuale
 
     console.log("Auth UID:", playerId);
     console.log("Current Questioner:", currentQuestioner);
@@ -258,12 +259,32 @@ function loadChooseAnswersUI() {
       console.log("You are a player");
       ChooseAnswersPageQuestioner.classList.add("hidden");
       ChooseAnswersPagePlayer.classList.remove("hidden");
+
+      // Accedi al mazzo del giocatore corrente
+      const playerData = roomData.players[playerId]; // Recupera il dato del giocatore corrente
+      cardsDeck = playerData.deck; // Assegna il mazzo del giocatore
+
+      AnswerSelectorCon.innerHTML = "";
+      // Aggiunge un div per ogni carta nel mazzo del giocatore
+      cardsDeck.forEach((card, index) => {
+        AnswerSelectorCon.innerHTML += `
+          <div class="AnswerSelectorCard" id="AnswerSelectorCard${index}">
+            <h3 class="MediumText BlackText">✦ Risposta</h3>
+            <h2 class="SemiBigText BlackText">${card[0]}</h2> <!-- Mostra la risposta -->
+          </div>
+        `;
+      });
     }
 
     // Aggiorna il testo della domanda
+    if (currentQuestion) {
       AnswerCardText.innerText = currentQuestion[0]; // Il primo elemento dell'array è la domanda
+    } else {
+      AnswerCardText.innerText = "No question available.";
+    }
   });
 }
+
 
 // Funzione per monitorare costantemente isRoundPlaying
 function monitorIsRoundPlaying() {
