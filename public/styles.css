@@ -219,8 +219,24 @@ body {
   }
 }
 
+/**/
+.AnswerCardCon{
+  width: 60%;
+  background-color: #DC557D;
+  padding: 35px;
+  border-radius: 15px;
+  margin: 10px;
+}
 
-
+@media screen and (orientation: portrait) {
+  .AnswerCardCon{
+    width: 80%;
+    background-color: #DC557D;
+    padding: 25px;
+    border-radius: 15px;
+    margin: 10px;
+  }
+}
 
 
 
@@ -244,6 +260,10 @@ body {
 
 .MediumText{
   font-size: medium;
+}
+
+.LeftAligned{
+  text-align: end;
 }
 
 /*********************************/

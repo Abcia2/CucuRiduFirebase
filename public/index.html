@@ -12,7 +12,7 @@
   <script defer src="index.js"></script>
 </head>
 <body>
-  <div id="FirstPage" class="FixedPage">
+  <div id="FirstPage" class="FixedPage hidden">
     <div class="FirstPageButtonsCon FixedPageMainConCentredY">
       <img src="./Assets/Logo.png" alt="Cucu Ridu (Sad Hamster)" class="FirstPageLogo">
       <button id="CreateRoomButton" class="Button1 PinkButton BlackText">Create Room</button>
@@ -37,6 +37,25 @@
     </div>
   </div>
 
+  <div id="ChooseAnswersPage" class="FixedPage">
+    <div id="ChooseAnswersPageQuestioner" class="FixedPageMainConCentredY hidden">
+      <div class="AnswerCardCon">
+        <h3 class="MediumText BlackText"> ♥ Domanda </h3>
+        <h2 class="SemiBigText BlackText" id="AnswerCardText">Ti voglio bene ma capirai che _ non è una cosa accettabile</h2>
+      <br>
+        <h3 class="MediumText BlackText LeftAligned" id="ChooseAnswersCompletedCounterText"> X / Y Submitted ✅</h3>
+      </div>
+      <h4 class="MediumText BlackText">Wait ✋ (theydontlovulikeido) for everyone to choose <3</h4>
+      
+    </div>
+    <div id="ChooseAnswersPagePlayer" class="FixedPageMainCon ">
+      <div class="AnswerCardCon">
+        <h3 class="MediumText BlackText"> ♥ Domanda </h3>
+        <h2 class="SemiBigText BlackText" id="AnswerCardText">Ti voglio bene ma capirai che _ non è una cosa accettabile</h2>
+      </div>
+      <h4 class="MediumText BlackText">plz select the funniest things <3</h4>
+    </div>
+  </div>
 
   <div id="game-container" class="hidden">
     <div id="initial-screen">
