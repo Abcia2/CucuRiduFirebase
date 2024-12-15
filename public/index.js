@@ -56,7 +56,9 @@ const WaitUiAdminText = document.getElementById("WaitUiAdminText");
 const WaitUiAdminButton = document.getElementById("WaitUiAdminButton");
 
 const AnswerCardText = document.getElementById("AnswerCardText");
+const AnswerCardText2 = document.getElementById("AnswerCardText2");
 const AnswerSelectorCon = document.getElementById("AnswerSelectorCon");
+const AnswerNumberSelectorRow = document.getElementById("AnswerNumberSelectorRow");
 
 // State
 let roomCode = null;
@@ -193,6 +195,8 @@ JoinRoomButton.addEventListener("click", () => {
 function startGame() {
   console.log("inizio");
 
+  let currentQuestion = null; // Dichiarazione globale per il contesto della funzione
+
   // Aggiorna la stanza impostando isWaiting a false e l'admin come currentQuestioner
   roomRef
     .update({
@@ -204,10 +208,12 @@ function startGame() {
       return assignInitialCardsToPlayers(roomCode);
     })
     .then(() => {
-      // Pesca una domanda e aspetta che venga completata
+      // Pesca una domanda e salva il risultato
       return drawQuestion();
     })
-    .then((currentQuestion) => {
+    .then((question) => {
+      currentQuestion = question; // Assegna la domanda pescata alla variabile globale
+
       // Aggiorna la stanza con i dettagli del round
       return roomRef.update({
         isRoundPlaying: true,
@@ -219,7 +225,7 @@ function startGame() {
     })
     .then(() => {
       console.log("Round Started");
-      console.log(currentQuestion);
+      console.log(currentQuestion); // Ora la variabile è accessibile
       ChangeScreen(WaitingToStartPage, ChooseAnswersPage);
       loadChooseAnswersUI(); // Carica solo dopo che sono stati salvati i dati
     })
@@ -227,6 +233,7 @@ function startGame() {
       console.error("Errore durante l'aggiornamento del round:", error);
     });
 }
+
 
 // Load Choose Answers UI
 function loadChooseAnswersUI() {
@@ -255,6 +262,7 @@ function loadChooseAnswersUI() {
       console.log("You are the questioner");
       ChooseAnswersPageQuestioner.classList.remove("hidden");
       ChooseAnswersPagePlayer.classList.add("hidden");
+      AnswerCardText.innerText = currentQuestion[0];
     } else {
       console.log("You are a player");
       ChooseAnswersPageQuestioner.classList.add("hidden");
@@ -265,6 +273,7 @@ function loadChooseAnswersUI() {
       cardsDeck = playerData.deck; // Assegna il mazzo del giocatore
 
       AnswerSelectorCon.innerHTML = "";
+      AnswerCardText2.innerText = currentQuestion[0];
       // Aggiunge un div per ogni carta nel mazzo del giocatore
       cardsDeck.forEach((card, index) => {
         AnswerSelectorCon.innerHTML += `
@@ -274,14 +283,13 @@ function loadChooseAnswersUI() {
           </div>
         `;
       });
+
+      AnswerNumberSelectorRow.innerHTML = "";
+      for(let i = 0; i < roomData.currentQuestion[1]; i++){
+        AnswerNumberSelectorRow.innerHTML += `<div class="AnswerNumberSelectorPill" id="AnswerNumberSelectorPill${i + 1}">Space ${i + 1}</div>`;
+      }
     }
 
-    // Aggiorna il testo della domanda
-    if (currentQuestion) {
-      AnswerCardText.innerText = currentQuestion[0]; // Il primo elemento dell'array è la domanda
-    } else {
-      AnswerCardText.innerText = "No question available.";
-    }
   });
 }
 
