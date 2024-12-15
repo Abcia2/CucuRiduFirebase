@@ -40,6 +40,7 @@ const ChooseAnswersPage = document.getElementById("ChooseAnswersPage");
 // Buttons
 const CreateRoomButton = document.getElementById("CreateRoomButton");
 const JoinRoomButton = document.getElementById("JoinRoomButton");
+const AnswerSelectorSubmitButton = document.getElementById("AnswerSelectorSubmitButton");
 
 // Other UI
 const PlayerInfoCon = document.getElementById("PlayerInfoCon");
@@ -70,7 +71,9 @@ let playerRef = null;
 let playerName = "";
 let playerPfp = 1;
 let SelectedSpace = 1;
+let TotalSpaces = 1;
 let SelectedAnswer = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
+let PlayerDeck = [];
 
 // Funzione per caricare i deck
 function loadDecks() {
@@ -139,8 +142,14 @@ CreateRoomButton.addEventListener("click", () => {
         currentRound: null,
         isRoundPlaying: false,
         isStartWaiting: true,
+        currentAnswers: [],
+        totalSubmissions: 0,
+        totalPlayers: 1 // Inizializza solo 1 giocatore (l'admin)
       })
       .then(() => {
+        // Aumenta il totalPlayers solo una volta
+        roomRef.child("totalPlayers").set(1);
+        
         // Avvia il monitoraggio dei giocatori
         monitorPlayersPfp();
 
@@ -150,6 +159,8 @@ CreateRoomButton.addEventListener("click", () => {
       });
   });
 });
+
+
 
 // Join Room
 JoinRoomButton.addEventListener("click", () => {
@@ -173,10 +184,12 @@ JoinRoomButton.addEventListener("click", () => {
           name: playerName,
           deck: [],
           wins: 0,
-          isAsking: false,
           profilePicture: playerPfp,
         })
         .then(() => {
+          // Aumenta il totalPlayers
+          roomRef.child("totalPlayers").transaction((currentTotal) => (currentTotal || 0) + 1);
+          
           monitorPlayersPfp(); // Inizia a monitorare i giocatori
         });
 
@@ -192,6 +205,7 @@ JoinRoomButton.addEventListener("click", () => {
     }
   });
 });
+
 
 // Start game
 function startGame() {
@@ -256,6 +270,8 @@ function loadChooseAnswersUI() {
     const currentQuestion = roomData.currentQuestion; // La domanda attuale
 
     SelectedSpace = currentQuestion[1]
+    TotalSpaces = currentQuestion[1]
+    
 
     console.log("Auth UID:", playerId);
     console.log("Current Questioner:", currentQuestioner);
@@ -275,6 +291,7 @@ function loadChooseAnswersUI() {
       // Accedi al mazzo del giocatore corrente
       const playerData = roomData.players[playerId]; // Recupera il dato del giocatore corrente
       cardsDeck = playerData.deck; // Assegna il mazzo del giocatore
+      PlayerDeck = playerData.deck;
 
       AnswerSelectorCon.innerHTML = "";
       AnswerCardText2.innerText = currentQuestion[0];
@@ -293,6 +310,8 @@ function loadChooseAnswersUI() {
       for(let i = 0; i < roomData.currentQuestion[1]; i++){
         AnswerNumberSelectorRow.innerHTML += `<div class="AnswerNumberSelectorPill" id="AnswerNumberSelectorPill${i + 1}" onclick="SelectSpace(${i + 1})">Space ${i + 1}</div>`;
       }
+
+      SelectSpace(1);
 
       /*
       document.querySelectorAll(".SelctableCard").forEach((element, index) => {
@@ -328,16 +347,110 @@ function SelectAnswerCard(index) {
     }
     SelectedAnswer[SelectedSpace] = index; // Aggiorna l'indice nello spazio
     currentCard.classList.add("SelectedAnswerCard"); // Aggiungi la classe al nuovo div
+
+    // Scorri tutto SelectedAnswer e aggiorna le classi
+    for (let i = 0; i < SelectedAnswer.length; i++) {
+      if (i !== SelectedSpace) {
+        const cardToUpdate = document.getElementById(`AnswerSelectorCard${SelectedAnswer[i]}`);
+        if (cardToUpdate) {
+          cardToUpdate.classList.add("SelectedAnswerCard"); // Aggiungi la classe a tutti i div corrispondenti agli indici selezionati
+        }
+      }
+    }
   }
 
   console.log("Updated SelectedAnswer: ", SelectedAnswer);
 }
 
 
-// Select Space
-function SelectSpace(index){
 
+// Select Space
+function SelectSpace(index) {
+  const allPills = document.querySelectorAll(".AnswerNumberSelectorPill"); // Seleziona tutti i div con la classe AnswerNumberSelectorPill
+  const currentPill = document.getElementById(`AnswerNumberSelectorPill${index}`); // Div attualmente selezionato
+
+  console.log("SelectedSpace before update: ", SelectedSpace);
+
+  // Rimuovi la classe SelectedPill da tutti i div
+  allPills.forEach((pill) => {
+    pill.classList.remove("SelectedPill");
+  });
+
+  // Aggiorna `SelectedSpace` con il nuovo indice
+  SelectedSpace = index;
+
+  // Aggiungi la classe al div corrente per evidenziare
+  if (currentPill) {
+    currentPill.classList.add("SelectedPill");
+    console.log(`Added class "SelectedPill" to element with ID "AnswerNumberSelectorPill${index}".`);
+  }
+
+  console.log("Updated SelectedSpace: ", SelectedSpace);
 }
+
+
+// Submit Answers
+function SubmitAnswers() {
+  // Controlla se tutte le risposte sono state selezionate
+  for (let i = 1; i < SelectedSpace; i++) {
+    if (SelectedAnswer[i] === -1) {
+      alert("Please select all answers before submitting."); 
+      return; 
+    }
+  }
+
+  // Creazione di un array temporaneo
+  const tempSubmission = [playerId, []]; 
+  console.log("SoloPlayerId: ", tempSubmission);
+  console.log("TotalSpaces: ", TotalSpaces);
+
+  // Aggiungere le risposte selezionate all'array temporaneo
+  for (let i = 1; i < TotalSpaces + 1; i++) {
+    const answer = PlayerDeck[SelectedAnswer[i]];
+    console.log("Selected answer:", answer);
+
+    if (Array.isArray(answer) && answer[0]) {
+      tempSubmission[1].push(answer[0]); // Aggiunge la stringa al tempSubmission
+    } else {
+      console.warn("Invalid answer structure:", answer);
+    }
+
+    // Rimuove le carte dal deck del giocatore
+    PlayerDeck.splice(SelectedAnswer[i], 1);
+    console.log("Deck aggiornato:", PlayerDeck);
+  }
+
+  console.log("TempSubmission:", tempSubmission);
+
+  // Gestire il contatore e aggiungere la risposta alla lista
+  roomRef.child("totalSubmissions").transaction((currentTotal) => {
+    const newTotal = (currentTotal || 0) + 1;
+
+    // Aggiungere l'array come indice numerico
+    roomRef.child(`submittedAnswers/${newTotal - 1}`).set(tempSubmission);
+
+    return newTotal; // Aggiorna il contatore in Firebase
+  });
+
+  // Richiamare drawCardsFromDeck per pescare le carte rimanenti dal deckAnswers
+  drawCardsFromDeck("deckAnswers", SelectedSpace).then((drawnCards) => {
+    console.log("Drawn cards:", drawnCards);
+
+    // Sincronizzare tutto
+    return roomRef.update({
+      "deckAnswers": drawnCards, 
+      [`players/${playerId}/deck`]: PlayerDeck, 
+    });
+  }).then(() => {
+    console.log("Answers submitted and decks updated successfully.");
+    alert("Answers submitted successfully!");
+  }).catch((error) => {
+    console.error("Error submitting answers:", error);
+    alert("An error occurred while submitting the answers. Please try again.");
+  });
+}
+
+
 
 
 // Funzione per monitorare costantemente isRoundPlaying
@@ -551,6 +664,10 @@ function assignInitialCardsToPlayers(roomId) {
 WaitUiAdminButton.addEventListener("click", () => {
   startGame();
 });
+
+AnswerSelectorSubmitButton.addEventListener("click", () =>{
+  SubmitAnswers();
+})
 
 // Carte e nomi
 /*Const decks (è troppo lunga per inserirla qui.)
