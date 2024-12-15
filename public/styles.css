@@ -1,14 +1,118 @@
+@import url('https://fonts.googleapis.com/css2?family=Chewy&display=swap');
+
+.chewy-regular {
+  font-family: "Chewy", system-ui;
+}
+
+* {
+  transition: all 0.3s ease-in;
+}
+
 body {
-  font-family: Arial, sans-serif;
+  font-family: Chewy, system-ui;
   margin: 0;
   padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #f0f0f0;
+  background-color: #FED6E2;
 }
 
+.FixedPage{
+  display: fixed;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+}
+
+.FixedPageMainCon{
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+}
+
+.FixedPageMainConCentredY{
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.Button1{
+  padding: 10px 20px;
+  margin: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: #DC557D;
+  font-size: 16px;
+  font-family: Chewy, system-ui;
+}
+
+.Button1:hover{
+  opacity: 80%;
+}
+
+.Button1:active{
+  opacity: 50%;
+}
+
+/**/
+.FirstPageLogo{
+  width: 80%;
+}
+
+
+/**/
+.PlayersPfpRowCon {
+  display: flex;
+  overflow-x: auto; /* Abilita lo scrolling orizzontale solo della barra */
+  white-space: nowrap; /* Evita il salto di riga */
+  justify-content: center;
+  padding: 10px 0;
+  width: 100%; /* Assicura che occupi tutta la larghezza */
+  scrollbar-width: none; /* Nasconde la barra di scorrimento per Firefox
+  -ms-overflow-style: none; /* Nasconde la barra di scorrimento per Internet Explorer e Edge */
+  overflow-y: hidden; /* Nasconde la barra di scorrimento verticale */
+}
+
+.PlayerPfpCon {
+  display: inline-block; /* Per disporre le foto orizzontalmente */
+  text-align: center;
+  margin-right: 15px; /* Spaziatura tra le foto */
+}
+
+.PlayerPfpImg {
+  width: 60px; /* Dimensione delle immagini */
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover; /* Per mantenere le proporzioni corrette */
+}
+
+.PlayerPfpText {
+  font-size: 14px;
+  margin-top: 5px;
+  color: #121212; /* Stesso colore del testo */
+}
+
+
+
+
+
+
+
+
+.BlackText {
+  color: #121212;
+}
+
+/*********************************/
 #game-container {
   width: 80%;
   max-width: 600px;
@@ -19,6 +123,7 @@ body {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+/*
 button {
   padding: 10px 20px;
   margin: 10px;
@@ -32,7 +137,7 @@ button {
 
 button:hover {
   background-color: #0056b3;
-}
+}*/
 
 .hidden {
   display: none;

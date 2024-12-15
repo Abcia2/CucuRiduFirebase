@@ -4,14 +4,63 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Card Game</title>
+
   <link rel="stylesheet" href="styles.css">
   <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script defer src="main.js"></script>
+  <script defer src="index.js"></script>
 </head>
 <body>
-  <div id="game-container">
+  <div id="FirstPage" class="FixedPage">
+    <div class="FirstPageButtonsCon FixedPageMainConCentredY">
+      <img src="./Assets/Logo.png" alt="Cucu Ridu (Sad Hamster)" class="FirstPageLogo">
+      <button id="CreateRoomButton" class="Button1 BlackText">Create Room</button>
+      <button id="JoinRoomButton" class="Button1 BlackText">Join Room</button>
+    </div>
+  </div>
+
+  <div id="WaitingToStartPage" class="FixedPage hidden">
+    <div class="WaitingToStartPageCon FixedPageMainCon">
+      <div class="PlayersPfpRowCon">
+        <div class="PlayerPfpCon">
+          <img src="./Assets/PfP/1.png" alt="PFP" class="PlayerPfpImg">
+          <h3 class="PlayerPfpText BlackText">Player Name</h3>
+        </div>
+        <div class="PlayerPfpCon">
+          <img src="./Assets/PfP/1.png" alt="PFP" class="PlayerPfpImg">
+          <h3 class="PlayerPfpText BlackText">Player Name</h3>
+        </div>
+        <div class="PlayerPfpCon">
+          <img src="./Assets/PfP/1.png" alt="PFP" class="PlayerPfpImg">
+          <h3 class="PlayerPfpText BlackText">Player Name</h3>
+        </div>
+        <div class="PlayerPfpCon">
+          <img src="./Assets/PfP/1.png" alt="PFP" class="PlayerPfpImg">
+          <h3 class="PlayerPfpText BlackText">Player Name</h3>
+        </div>
+        <div class="PlayerPfpCon">
+          <img src="./Assets/PfP/1.png" alt="PFP" class="PlayerPfpImg">
+          <h3 class="PlayerPfpText BlackText">Player Name</h3>
+        </div>
+        <div class="PlayerPfpCon">
+          <img src="./Assets/PfP/1.png" alt="PFP" class="PlayerPfpImg">
+          <h3 class="PlayerPfpText BlackText">Player Name</h3>
+        </div>
+        <div class="PlayerPfpCon">
+          <img src="./Assets/PfP/1.png" alt="PFP" class="PlayerPfpImg">
+          <h3 class="PlayerPfpText BlackText">Player Name</h3>
+        </div>
+        <div class="PlayerPfpCon">
+          <img src="./Assets/PfP/1.png" alt="PFP" class="PlayerPfpImg">
+          <h3 class="PlayerPfpText BlackText">Player Name</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="game-container" class="hidden">
     <div id="initial-screen">
       <h1>Welcome to the Card Game!</h1>
       <button id="create-room-btn">Create Room</button>
