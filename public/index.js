@@ -436,19 +436,25 @@ function SubmitAnswers() {
   drawCardsFromDeck("deckAnswers", SelectedSpace).then((drawnCards) => {
     console.log("Drawn cards:", drawnCards);
 
-    // Sincronizzare tutto
+    // Aggiungere le carte pescate al deck del giocatore
+    PlayerDeck = PlayerDeck.concat(drawnCards);
+    console.log("Updated PlayerDeck with drawn cards:", PlayerDeck);
+
+    // Sincronizzare tutto con Firebase
     return roomRef.update({
-      "deckAnswers": drawnCards, 
-      [`players/${playerId}/deck`]: PlayerDeck, 
+      [`players/${playerId}/deck`]: PlayerDeck, // Aggiorna il deck del giocatore
     });
   }).then(() => {
-    console.log("Answers submitted and decks updated successfully.");
+    console.log("Deck aggiornato su Firebase con successo.");
     alert("Answers submitted successfully!");
+    ChooseAnswersPageQuestioner.classList.remove("hidden");
+    ChooseAnswersPagePlayer.classList.add("hidden");
   }).catch((error) => {
     console.error("Error submitting answers:", error);
     alert("An error occurred while submitting the answers. Please try again.");
   });
 }
+
 
 
 
