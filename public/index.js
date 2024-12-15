@@ -290,7 +290,7 @@ function loadChooseAnswersUI() {
 
       AnswerNumberSelectorRow.innerHTML = "";
       for(let i = 0; i < roomData.currentQuestion[1]; i++){
-        AnswerNumberSelectorRow.innerHTML += `<div class="AnswerNumberSelectorPill" id="AnswerNumberSelectorPill${i + 1}">Space ${i + 1}</div>`;
+        AnswerNumberSelectorRow.innerHTML += `<div class="AnswerNumberSelectorPill" id="AnswerNumberSelectorPill${i + 1}" onclick="SelectSpace(${i + 1})">Space ${i + 1}</div>`;
       }
 
       /*
@@ -332,6 +332,11 @@ function SelectAnswerCard(index) {
   console.log("Updated SelectedAnswer: ", SelectedAnswer);
 }
 
+
+// Select Space
+function SelectSpace(index){
+
+}
 
 
 // Funzione per monitorare costantemente isRoundPlaying
