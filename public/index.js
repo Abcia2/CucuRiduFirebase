@@ -287,6 +287,7 @@ function loadChooseAnswersUI() {
           </div>
         `;
       });
+      AnswerSelectorCon.innerHTML += "<br>"
 
       AnswerNumberSelectorRow.innerHTML = "";
       for(let i = 0; i < roomData.currentQuestion[1]; i++){
