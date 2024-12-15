@@ -322,7 +322,8 @@ body {
   border-radius: 15px;
   margin: 10px;
 }
-.SectectedAnswerCard {
+
+.SelectedAnswerCard {
   background-color: #c5eba7;
 }
 

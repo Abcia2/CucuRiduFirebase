@@ -70,7 +70,7 @@ let playerRef = null;
 let playerName = "";
 let playerPfp = 1;
 let SelectedSpace = 1;
-let SelectedAnswer = [];
+let SelectedAnswer = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
 
 // Funzione per caricare i deck
 function loadDecks() {
@@ -255,6 +255,8 @@ function loadChooseAnswersUI() {
     const currentQuestioner = roomData.currentQuestioner; // Chi fa la domanda
     const currentQuestion = roomData.currentQuestion; // La domanda attuale
 
+    SelectedSpace = currentQuestion[1]
+
     console.log("Auth UID:", playerId);
     console.log("Current Questioner:", currentQuestioner);
     console.log("Current Question:", currentQuestion);
@@ -302,24 +304,34 @@ function loadChooseAnswersUI() {
   });
 }
 
-function SelectAnswerCard(index) {
-  const cardElement = document.getElementById(`AnswerSelectorCard${index}`); // Seleziona la carta tramite ID
-  
-  console.log("cardElement ", cardElement)
-  console.log("index ", index)
 
-  if (!SelectedAnswer.includes(index)) {
-    // Se l'indice non è presente in SelectedAnswer, lo aggiunge
-    SelectedAnswer.push(index);
-    cardElement.classList.add("SelectedAnswerCard"); // Aggiunge la classe
+// Select an answer div
+function SelectAnswerCard(index) {
+  const currentCard = document.getElementById(`AnswerSelectorCard${index}`); // Carta corrente
+  const previousIndex = SelectedAnswer[SelectedSpace]; // Recupera l'indice attualmente selezionato nello spazio
+
+  console.log("Current Card: ", currentCard);
+  console.log("SelectedSpace: ", SelectedSpace);
+  console.log("Previous Index in Space: ", previousIndex);
+
+  // Controlla se lo spazio è vuoto
+  if (previousIndex === -1) {
+    // Spazio vuoto: assegna l'indice corrente
+    SelectedAnswer[SelectedSpace] = index;
+    currentCard.classList.add("SelectedAnswerCard"); // Aggiungi la classe per evidenziare la selezione
   } else {
-    // Se l'indice è già presente, lo rimuove
-    SelectedAnswer = SelectedAnswer.filter((i) => i !== index); // Rimuove l'indice dall'array
-    cardElement.classList.remove("SelectedAnswerCard"); // Rimuove la classe
+    // Spazio già occupato: aggiorna il vecchio div e sostituisci con il nuovo
+    const previousCard = document.getElementById(`AnswerSelectorCard${previousIndex}`);
+    if (previousCard) {
+      previousCard.classList.remove("SelectedAnswerCard"); // Rimuovi la classe dal vecchio div
+    }
+    SelectedAnswer[SelectedSpace] = index; // Aggiorna l'indice nello spazio
+    currentCard.classList.add("SelectedAnswerCard"); // Aggiungi la classe al nuovo div
   }
 
-  console.log("SelectedAnswers:", SelectedAnswer); // Per debugging
+  console.log("Updated SelectedAnswer: ", SelectedAnswer);
 }
+
 
 
 // Funzione per monitorare costantemente isRoundPlaying
