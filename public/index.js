@@ -25,6 +25,9 @@ const gameScreen = document.getElementById("game-screen");
 // Screens
 const FirstPage = document.getElementById("FirstPage");
 const WaitingToStartPage = document.getElementById("WaitingToStartPage");
+const ChooseAnswersPagePlayer = document.getElementById("ChooseAnswersPagePlayer");
+const ChooseAnswersPageQuestioner = document.getElementById("ChooseAnswersPageQuestioner");
+const ChooseAnswersPage = document.getElementById("ChooseAnswersPage");
 
 // Buttons
 const CreateRoomButton = document.getElementById("CreateRoomButton");
@@ -117,7 +120,7 @@ CreateRoomButton.addEventListener("click", () => {
       })
       .then(() => {
         // Avvia il monitoraggio dei giocatori
-        monitorPlayers();
+        monitorPlayersPfp();
 
         // Cambia schermata
         ChangeScreen(FirstPage, WaitingToStartPage);
@@ -148,12 +151,12 @@ JoinRoomButton.addEventListener("click", () => {
           profilePicture: generatePlayerPfp(),
         })
         .then(() => {
-          monitorPlayers(); // Inizia a monitorare i giocatori
+          monitorPlayersPfp(); // Inizia a monitorare i giocatori
         });
 
       ChangeScreen(FirstPage, WaitingToStartPage);
       //switchToRoomScreen(roomCode);
-      UpdateProfilesRow();
+      monitorPlayersPfp();
       monitorIsRoundPlaying();
     } else {
       alert(
@@ -177,7 +180,7 @@ function startGame() {
   assignInitialCardsToPlayers(roomCode);
 
   // Pesca una domanda e aggiorna la stanza con la domanda corrente
-  const currentQuestion = drawQuestion(); // Fai il tuo metodo drawQuestion
+  const currentQuestion = drawQuestion();
 
   roomRef.update({
     isRoundPlaying: true,
@@ -190,6 +193,12 @@ function startGame() {
   });
 
   console.log("RoundStarted");
+  ChangeScreen(WaitingToStartPage, ChooseAnswersPage);
+}
+
+// Load Choose Answers UI
+function loadChooseAnswersUI(){
+  
 }
 
 // Funzione per monitorare costantemente isRoundPlaying
@@ -200,6 +209,7 @@ function monitorIsRoundPlaying() {
   roomRef.child("isRoundPlaying").on("value", (snapshot) => {
     if (snapshot.val() === true) {
       // Il round è iniziato, fai qualcosa per notificare i giocatori
+      ChangeScreen(WaitingToStartPage, ChooseAnswersPage);
       console.log("RoundStarted");
     }
   });
@@ -226,54 +236,16 @@ function showQuestionAndAnswers() {
     }
   });
 }
+function LoadChooseAnswersScreen(){}
 
-// Switch to Room Screen
+// Switch Screens
 function ChangeScreen(toHide, toShow) {
   toHide.classList.add("hidden");
   toShow.classList.remove("hidden");
 }
 
-// Update Profiles Row
-function UpdateProfilesRow() {
-  const playersRef = db.ref(`rooms/${roomCode}/players`);
-
-  playersRef.once("value", (snapshot) => {
-    const players = snapshot.val(); // Ottieni tutti i giocatori come oggetto
-
-    console.log(players);
-
-    if (players) {
-      // Creiamo un set per tenere traccia dei giocatori esistenti
-      const currentPlayers = new Set(Object.keys(players));
-
-      // Rimuovi i div per i giocatori non più presenti
-      document.querySelectorAll(".PlayerPfpCon").forEach((div) => {
-        const playerId = div.getAttribute("playerId");
-        if (!currentPlayers.has(playerId)) {
-          div.remove();
-        }
-      });
-
-      // Itera su ciascun giocatore e aggiungilo se non è già presente
-      Object.entries(players).forEach(([playerId, playerData]) => {
-        if (!document.querySelector(`.PlayerPfpCon[playerId="${playerId}"]`)) {
-          // Aggiungi solo i giocatori non ancora visibili
-          PlayersPfpRowCon.innerHTML += `<div class="PlayerPfpCon" playerId="${playerId}">
-            <img src="./Assets/PfP/${playerData.profilePicture}.jpg" alt="PFP" class="PlayerPfpImg BlackBorder3">
-            <h3 class="PlayerPfpText BlackText">${playerData.name}</h3>
-          </div>`;
-        }
-      });
-    } else {
-      console.log("No players found in the room.");
-      // Rimuovi tutti i giocatori se non ce ne sono più
-      PlayersPfpRowCon.innerHTML = "";
-    }
-  });
-}
-
 // Update Profiles Row in real-time
-function monitorPlayers() {
+function monitorPlayersPfp() {
   const playersRef = db.ref(`rooms/${roomCode}/players`);
 
   // Listener per nuovi giocatori aggiunti
@@ -303,42 +275,6 @@ function monitorPlayers() {
   });
 }
 
-function switchToRoomScreen(code) {
-  initialScreen.classList.add("hidden");
-  roomScreen.classList.remove("hidden");
-  roomCodeDisplay.textContent = code;
-
-  // Check if user is Admin
-  db.ref(`rooms/${code}`)
-    .once("value")
-    .then((snapshot) => {
-      const room = snapshot.val();
-      startGameBtn.classList.add("hidden");
-      waitingMessage.classList.remove("hidden");
-
-      console.log("me:", playerId, "admin:", room.host);
-      if (playerId === room.host) {
-        console.log("è host");
-        startGameBtn.classList.remove("hidden");
-        waitingMessage.classList.add("hidden");
-      } else {
-        console.log("NOT host");
-        startGameBtn.classList.add("hidden");
-        waitingMessage.classList.remove("hidden");
-      }
-    });
-
-  // Listener per aggiornare l'elenco dei giocatori
-  db.ref(`rooms/${code}/players`).on("value", (snapshot) => {
-    playerList.innerHTML = "";
-    const players = snapshot.val();
-    for (const playerId in players) {
-      const li = document.createElement("li");
-      li.textContent = players[playerId].name;
-      playerList.appendChild(li);
-    }
-  });
-}
 
 function showQuestionAndAnswers() {
   // Ottieni la stanza
@@ -368,6 +304,7 @@ function generatePlayerName() {
   }`;
 }
 
+// Genera Random Foto Profilo
 function generatePlayerPfp() {
   return Math.floor(Math.random() * pfpCount) + 1;
 }
@@ -423,6 +360,7 @@ function drawQuestion() {
     });
 }
 
+// Dai le carte ai giocatori
 function assignInitialCardsToPlayers(roomId) {
   const roomRef = firebase.database().ref("rooms/" + roomId);
 
@@ -450,11 +388,15 @@ function assignInitialCardsToPlayers(roomId) {
     });
 }
 
+
+
 /* UI */
-// Admin Start Game
-startGameBtn.addEventListener("click", () => {
+// Buttons
+WaitUiAdminButton.addEventListener("click", () => {
   startGame();
 });
+
+
 
 // Carte e nomi
 /*Const decks (è troppo lunga per inserirla qui.)
