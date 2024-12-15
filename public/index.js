@@ -42,6 +42,10 @@ const CreateRoomButton = document.getElementById("CreateRoomButton");
 const JoinRoomButton = document.getElementById("JoinRoomButton");
 
 // Other UI
+const PlayerInfoCon = document.getElementById("PlayerInfoCon");
+const UserPfp = document.getElementById("UserPfp");
+const UserName = document.getElementById("UserName");
+
 const PlayersPfpRowCon = document.getElementById("PlayersPfpRowCon");
 
 const WaitToStartRoomCodeText = document.getElementById(
@@ -75,6 +79,9 @@ let playerId = null;
 let isHost = false;
 let roomRef = null;
 let playerRef = null;
+
+let playerName = "";
+let playerPfp = 1;
 
 // Funzione per caricare i deck
 function loadDecks() {
@@ -123,16 +130,19 @@ CreateRoomButton.addEventListener("click", () => {
     WaitToStartRoomCodeText.innerText = roomCode;
     WaitUiPlayersText.classList.add("hidden");
 
+    playerName = generatePlayerName()
+    playerPfp = generatePlayerPfp()
+
     // Imposta i dati iniziali della stanza
     roomRef
       .set({
         host: playerId,
         players: {
           [playerId]: {
-            name: generatePlayerName(),
+            name: playerName,
             deck: [],
             wins: 0,
-            profilePicture: generatePlayerPfp(),
+            profilePicture: playerPfp,
           },
         },
         deckQuestions: decks.deckQuestions,
@@ -147,6 +157,7 @@ CreateRoomButton.addEventListener("click", () => {
 
         // Cambia schermata
         ChangeScreen(FirstPage, WaitingToStartPage);
+        ShowInfoBar(true);
       });
   });
 });
@@ -158,6 +169,9 @@ JoinRoomButton.addEventListener("click", () => {
   WaitUiAdminButton.classList.add("hidden");
   WaitUiAdminText.classList.add("hidden");
 
+  playerName = generatePlayerName()
+  playerPfp = generatePlayerPfp()
+
   // Check if the room is waiting to start
   db.ref(`rooms/${roomCode}/isStartWaiting`).once("value", (snapshot) => {
     if (snapshot.val() === true) {
@@ -167,11 +181,11 @@ JoinRoomButton.addEventListener("click", () => {
       roomRef
         .child(`players/${playerId}`)
         .set({
-          name: generatePlayerName(),
+          name: playerName,
           deck: [],
           wins: 0,
           isAsking: false,
-          profilePicture: generatePlayerPfp(),
+          profilePicture: playerPfp,
         })
         .then(() => {
           monitorPlayersPfp(); // Inizia a monitorare i giocatori
@@ -180,6 +194,7 @@ JoinRoomButton.addEventListener("click", () => {
       ChangeScreen(FirstPage, WaitingToStartPage);
       //switchToRoomScreen(roomCode);
       monitorPlayersPfp();
+      ShowInfoBar(true);
       monitorIsRoundPlaying();
     } else {
       alert(
@@ -329,6 +344,18 @@ function LoadChooseAnswersScreen() {}
 function ChangeScreen(toHide, toShow) {
   toHide.classList.add("hidden");
   toShow.classList.remove("hidden");
+}
+
+function ShowInfoBar(bool){
+  if(bool){
+    PlayerInfoCon.classList.remove("hidden");
+
+    UserName.innerText = playerName;
+    UserPfp.src = `./Assets/PfP/${playerPfp}.jpg`;
+  }
+  else{
+    PlayerInfoCon.classList.add("hidden");
+  }
 }
 
 // Update Profiles Row in real-time
