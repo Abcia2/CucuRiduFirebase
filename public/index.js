@@ -21,6 +21,7 @@ const initialScreen = document.getElementById("initial-screen");
 const roomScreen = document.getElementById("room-screen");
 const gameScreen = document.getElementById("game-screen");
 
+/* New */
 // Screens
 const FirstPage = document.getElementById("FirstPage");
 const WaitingToStartPage = document.getElementById("WaitingToStartPage");
@@ -31,6 +32,10 @@ const JoinRoomButton = document.getElementById("JoinRoomButton");
 
 // Other UI
 const PlayersPfpRowCon = document.getElementById("PlayersPfpRowCon");
+const WaitToStartRoomCodeText = document.getElementById("WaitToStartRoomCodeText");
+const WaitUiPlayersText = document.getElementById("WaitUiPlayersText");
+const WaitUiAdminText = document.getElementById("WaitUiAdminText");
+const WaitUiAdminButton = document.getElementById("WaitUiAdminButton");
 
 const roomCodeInput = document.getElementById("room-code-input");
 const roomCodeDisplay = document.getElementById("room-code-display");
@@ -88,6 +93,8 @@ CreateRoomButton.addEventListener("click", () => {
 
     // Crea un riferimento alla stanza
     roomRef = firebase.database().ref("rooms/" + roomCode);
+    WaitToStartRoomCodeText.innerText = roomCode;
+    WaitUiPlayersText.classList.add("hidden");
 
     // Imposta i dati iniziali della stanza
     roomRef
@@ -122,12 +129,14 @@ CreateRoomButton.addEventListener("click", () => {
 JoinRoomButton.addEventListener("click", () => {
   roomCode = prompt("Enter the room code:").toUpperCase();
   isHost = false;
+  WaitUiAdminButton.classList.add("hidden");
+  WaitUiAdminText.classList.add("hidden");
 
   // Check if the room is waiting to start
   db.ref(`rooms/${roomCode}/isStartWaiting`).once("value", (snapshot) => {
     if (snapshot.val() === true) {
       roomRef = firebase.database().ref("rooms/" + roomCode);
-
+      WaitToStartRoomCodeText.innerText = roomCode;
       // Dopo che il giocatore si unisce
       roomRef
         .child(`players/${playerId}`)

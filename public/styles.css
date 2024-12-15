@@ -196,6 +196,15 @@ body {
   margin-top: 5px;
 }
 
+.WaitToStartUICon{
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 @media screen and (orientation: portrait) {
   .PlayerPfpImg {
     width: 40px; /* Dimensione delle immagini */
@@ -223,6 +232,18 @@ body {
 
 .BlackBorder3 {
   border: solid 3px #121212;
+}
+
+.BigText{
+  font-size: xx-large;
+}
+
+.SemiBigText{
+  font-size: larger;
+}
+
+.MediumText{
+  font-size: medium;
 }
 
 /*********************************/
