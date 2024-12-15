@@ -130,8 +130,8 @@ CreateRoomButton.addEventListener("click", () => {
     WaitToStartRoomCodeText.innerText = roomCode;
     WaitUiPlayersText.classList.add("hidden");
 
-    playerName = generatePlayerName()
-    playerPfp = generatePlayerPfp()
+    playerName = generatePlayerName();
+    playerPfp = generatePlayerPfp();
 
     // Imposta i dati iniziali della stanza
     roomRef
@@ -169,8 +169,8 @@ JoinRoomButton.addEventListener("click", () => {
   WaitUiAdminButton.classList.add("hidden");
   WaitUiAdminText.classList.add("hidden");
 
-  playerName = generatePlayerName()
-  playerPfp = generatePlayerPfp()
+  playerName = generatePlayerName();
+  playerPfp = generatePlayerPfp();
 
   // Check if the room is waiting to start
   db.ref(`rooms/${roomCode}/isStartWaiting`).once("value", (snapshot) => {
@@ -243,7 +243,6 @@ function startGame() {
     });
 }
 
-
 // Load Choose Answers UI
 function loadChooseAnswersUI() {
   const roomRef = db.ref("rooms/" + roomCode);
@@ -300,7 +299,6 @@ function loadChooseAnswersUI() {
   });
 }
 
-
 // Funzione per monitorare costantemente isRoundPlaying
 function monitorIsRoundPlaying() {
   const roomRef = db.ref("rooms/" + roomCode);
@@ -346,15 +344,26 @@ function ChangeScreen(toHide, toShow) {
   toShow.classList.remove("hidden");
 }
 
-function ShowInfoBar(bool){
-  if(bool){
-    PlayerInfoCon.classList.remove("hidden");
+function ShowInfoBar(bool) {
+  // Handle visibility for all elements with the class 'PlayerInfoCon'
+  document.querySelectorAll(".PlayerInfoCon").forEach((element) => {
+    if (bool) {
+      element.classList.remove("hidden");
+    } else {
+      element.classList.add("hidden");
+    }
+  });
 
-    UserName.innerText = playerName;
-    UserPfp.src = `./Assets/PfP/${playerPfp}.jpg`;
-  }
-  else{
-    PlayerInfoCon.classList.add("hidden");
+  if (bool) {
+    // Update all elements with the class 'UserName'
+    document.querySelectorAll(".UserName").forEach((element) => {
+      element.innerText = playerName;
+    });
+
+    // Update all elements with the class 'UserPfp'
+    document.querySelectorAll(".UserPfp").forEach((element) => {
+      element.src = `./Assets/PfP/${playerPfp}.jpg`;
+    });
   }
 }
 
@@ -467,7 +476,6 @@ function drawQuestion() {
       return null;
     });
 }
-
 
 // Dai le carte ai giocatori
 function assignInitialCardsToPlayers(roomId) {

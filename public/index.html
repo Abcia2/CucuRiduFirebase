@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,16 +12,10 @@
   <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script defer src="index.js"></script>
 </head>
+
 <body>
   <div id="LoadingPage" class="LoadingPage">
     <h3 class="SemiBigText BlackText">Loading...</h3>
-  </div>
-
-  <div class="PlayerInfoCon hidden" id="PlayerInfoCon">
-    <div class="PlayerInfoInnerCon">
-      <img src="./Assets/PfP/1.jpg" alt="PFP" id="UserPfp">
-      <h3 class="MediumText BlackText" id="UserName">${playerData.name}</h3>
-    </div>
   </div>
 
   <div id="FirstPage" class="FixedPage hidden">
@@ -32,6 +27,12 @@
   </div>
 
   <div id="WaitingToStartPage" class="FixedPage hidden">
+    <div class="PlayerInfoCon hidden PlayerInfoCon">
+      <div class="PlayerInfoInnerCon">
+        <img src="./Assets/PfP/1.jpg" alt="PFP" class="UserPfp">
+        <h3 class="MediumText BlackText UserName">${playerData.name}</h3>
+      </div>
+    </div>
     <div class="WaitingToStartPageCon FixedPageMainCon">
       <div class="PlayersPfpRowCon" id="PlayersPfpRowCon">
 
@@ -49,72 +50,92 @@
   </div>
 
   <div id="ChooseAnswersPage" class="FixedPage hidden">
+
+    <div class="PlayerInfoCon hidden PlayerInfoCon">
+      <div class="PlayerInfoInnerCon">
+        <img src="./Assets/PfP/1.jpg" alt="PFP" class="UserPfp">
+        <h3 class="MediumText BlackText UserName">${playerData.name}</h3>
+      </div>
+    </div>
+
     <div id="ChooseAnswersPageQuestioner" class="FixedPageMainConCentredY hidden">
       <div class="AnswerCardCon">
         <h3 class="MediumText BlackText"> ♥ Domanda </h3>
         <h2 class="SemiBigText BlackText" id="AnswerCardText">_ è buono, ma _ è molto meglio!</h2>
       </div>
-      <h4 class="MediumText BlackText">Wait ✋ (theydontlovulikeido) for everyone to choose <3</h4>
-      
+      <h4 class="MediumText BlackText">Wait ✋ (theydontlovulikeido) for everyone to choose <3< /h4>
+
     </div>
+
     <div id="ChooseAnswersPagePlayer" class="FixedPageMainCon hidden">
       <div class="AnswerCardCon ">
         <h3 class="MediumText BlackText"> ♥ Domanda </h3>
         <h2 class="SemiBigText BlackText" id="AnswerCardText">_ è buono, ma _ è molto meglio!</h2>
       </div>
-      <h4 class="MediumText BlackText">plz select the funniest things <3</h4>
-
-      <br>
-      <div class="AnswerNumberSelectorRow">
-        <div class="AnswerNumberSelectorPill SelectedPill" id="AnswerNumberSelectorPill1">Space 1</div>
-        <div class="AnswerNumberSelectorPill" id="AnswerNumberSelectorPill2">Space 2</div>
-        <div class="AnswerNumberSelectorPill" id="AnswerNumberSelectorPill3">Space 3</div>
-        <div class="AnswerNumberSelectorPill" id="AnswerNumberSelectorPill4">Space 4</div>
-      </div>
-      <br>
-
-      <div class="AnswerSelectorCon FixedPageMainConCentredY">        
-        <div class="AnswerSelectorCon" id="AnswerSelectorCon">
+      <h4 class="MediumText BlackText">plz select the funniest things <3< /h4>
 
           <br>
-        </div>
-        <button id="AnswerSelectorSubmitButton" class="Button1 GreenButton BlackText">Done</button>
-      </div>
+          <div class="AnswerNumberSelectorRow">
+            <div class="AnswerNumberSelectorPill SelectedPill" id="AnswerNumberSelectorPill1">Space 1</div>
+            <div class="AnswerNumberSelectorPill" id="AnswerNumberSelectorPill2">Space 2</div>
+            <div class="AnswerNumberSelectorPill" id="AnswerNumberSelectorPill3">Space 3</div>
+            <div class="AnswerNumberSelectorPill" id="AnswerNumberSelectorPill4">Space 4</div>
+          </div>
+          <br>
+
+          <div class="AnswerSelectorCon FixedPageMainConCentredY">
+            <div class="AnswerSelectorCon" id="AnswerSelectorCon">
+              <div class="AnswerSelectorCard" id="AnswerSelectorCard${index}">
+                <h3 class="MediumText BlackText">✦ Risposta</h3>
+                <h2 class="SemiBigText BlackText">${card[0]}</h2> <!-- Mostra la risposta -->
+              </div>
+              <div class="AnswerSelectorCard" id="AnswerSelectorCard${index}">
+                <h3 class="MediumText BlackText">✦ Risposta</h3>
+                <h2 class="SemiBigText BlackText">${card[0]}</h2> <!-- Mostra la risposta -->
+              </div>
+              <div class="AnswerSelectorCard" id="AnswerSelectorCard${index}">
+                <h3 class="MediumText BlackText">✦ Risposta</h3>
+                <h2 class="SemiBigText BlackText">${card[0]}</h2> <!-- Mostra la risposta -->
+              </div>
+              <div class="AnswerSelectorCard" id="AnswerSelectorCard${index}">
+                <h3 class="MediumText BlackText">✦ Risposta</h3>
+                <h2 class="SemiBigText BlackText">${card[0]}</h2> <!-- Mostra la risposta -->
+              </div>
+              <div class="AnswerSelectorCard" id="AnswerSelectorCard${index}">
+                <h3 class="MediumText BlackText">✦ Risposta</h3>
+                <h2 class="SemiBigText BlackText">${card[0]}</h2> <!-- Mostra la risposta -->
+              </div>
+              <div class="AnswerSelectorCard" id="AnswerSelectorCard${index}">
+                <h3 class="MediumText BlackText">✦ Risposta</h3>
+                <h2 class="SemiBigText BlackText">${card[0]}</h2> <!-- Mostra la risposta -->
+              </div>
+              <div class="AnswerSelectorCard" id="AnswerSelectorCard${index}">
+                <h3 class="MediumText BlackText">✦ Risposta</h3>
+                <h2 class="SemiBigText BlackText">${card[0]}</h2> <!-- Mostra la risposta -->
+              </div>
+              <div class="AnswerSelectorCard" id="AnswerSelectorCard${index}">
+                <h3 class="MediumText BlackText">✦ Risposta</h3>
+                <h2 class="SemiBigText BlackText">${card[0]}</h2> <!-- Mostra la risposta -->
+              </div>
+              <div class="AnswerSelectorCard" id="AnswerSelectorCard${index}">
+                <h3 class="MediumText BlackText">✦ Risposta</h3>
+                <h2 class="SemiBigText BlackText">${card[0]}</h2> <!-- Mostra la risposta -->
+              </div>
+              <div class="AnswerSelectorCard" id="AnswerSelectorCard${index}">
+                <h3 class="MediumText BlackText">✦ Risposta</h3>
+                <h2 class="SemiBigText BlackText">${card[0]}</h2> <!-- Mostra la risposta -->
+              </div>
+              <div class="AnswerSelectorCard" id="AnswerSelectorCard${index}">
+                <h3 class="MediumText BlackText">✦ Risposta</h3>
+                <h2 class="SemiBigText BlackText">${card[0]}</h2> <!-- Mostra la risposta -->
+              </div>
+              <br>
+            </div>
+            <button id="AnswerSelectorSubmitButton" class="Button1 GreenButton BlackText">Done</button>
+          </div>
     </div>
   </div>
-
-  <div id="game-container" class="hidden">
-    <div id="initial-screen">
-      <h1>Welcome to the Card Game!</h1>
-      <button id="create-room-btn">Create Room</button>
-      <button id="join-room-btn">Join Room</button>
-      <input type="text" id="room-code-input" placeholder="Enter Room Code">
-    </div>
-
-    <div id="room-screen" class="hidden">
-      <h2>Room Code: <span id="room-code-display"></span></h2>
-      <h3>Players:</h3>
-      <ul id="player-list"></ul>
-      <button id="start-game-btn" class="hidden">Start Game</button>
-      <p id="waiting-message" class="hidden">Waiting for the admin to start the game...</p>
-    </div>
-
-    <div id="game-screen" class="hidden">
-      <h2>Current Question:</h2>
-      <div id="current-question"></div>
-
-      <div id="cards-container">
-        <h3>Your Cards:</h3>
-        <div id="cards"></div>
-        <button id="confirm-response-btn" class="hidden">Confirm Response</button>
-      </div>
-
-      <div id="responses-container" class="hidden">
-        <h3>Submitted Responses:</h3>
-        <div id="responses"></div>
-        <button id="choose-winner-btn" class="hidden">Choose Winner</button>
-      </div>
-    </div>
   </div>
 </body>
+
 </html>
