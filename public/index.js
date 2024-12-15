@@ -586,7 +586,7 @@ const decks = {
     ["_ è un modo per fermare la guerra", 1],
     ["Non mi piace il pene ma per _ un pompino lo farei", 1],
     ["Il bottone rosso nella Casa Bianca serve per _", 1],
-    ["Sei così stupid* che saresti in grado di _", 1],
+    ["È così stupid* che sarebbe in grado di _", 1],
     ["_ . Aura +9999", 1],
     ["Venderei la prof di inglese per _", 1],
     ["Ardua scelta: _ o _", 2],
