@@ -14,7 +14,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
-const pfpCount = 7;
+const pfpCount = 26;
 
 // DOM Elements
 const initialScreen = document.getElementById("initial-screen");
@@ -259,7 +259,7 @@ function UpdateProfilesRow() {
         if (!document.querySelector(`.PlayerPfpCon[playerId="${playerId}"]`)) {
           // Aggiungi solo i giocatori non ancora visibili
           PlayersPfpRowCon.innerHTML += `<div class="PlayerPfpCon" playerId="${playerId}">
-            <img src="./Assets/PfP/${playerData.profilePicture}.png" alt="PFP" class="PlayerPfpImg BlackBorder3">
+            <img src="./Assets/PfP/${playerData.profilePicture}.jpg" alt="PFP" class="PlayerPfpImg BlackBorder3">
             <h3 class="PlayerPfpText BlackText">${playerData.name}</h3>
           </div>`;
         }
@@ -283,7 +283,7 @@ function monitorPlayers() {
 
     // Aggiorna la UI per il nuovo giocatore
     PlayersPfpRowCon.innerHTML += `<div class="PlayerPfpCon" playerId="${playerId}">
-      <img src="./Assets/PfP/${playerData.profilePicture}.png" alt="PFP" class="PlayerPfpImg">
+      <img src="./Assets/PfP/${playerData.profilePicture}.jpg" alt="PFP" class="PlayerPfpImg">
       <h3 class="PlayerPfpText BlackText">${playerData.name}</h3>
     </div>`;
   });
@@ -295,7 +295,7 @@ function monitorPlayers() {
     if (players) {
       Object.entries(players).forEach(([playerId, playerData]) => {
         PlayersPfpRowCon.innerHTML += `<div class="PlayerPfpCon" playerId="${playerId}">
-          <img src="./Assets/PfP/${playerData.profilePicture}.png" alt="PFP" class="PlayerPfpImg">
+          <img src="./Assets/PfP/${playerData.profilePicture}.jpg" alt="PFP" class="PlayerPfpImg">
           <h3 class="PlayerPfpText BlackText">${playerData.name}</h3>
         </div>`;
       });
