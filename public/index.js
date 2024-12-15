@@ -40,7 +40,9 @@ const ChooseAnswersPage = document.getElementById("ChooseAnswersPage");
 // Buttons
 const CreateRoomButton = document.getElementById("CreateRoomButton");
 const JoinRoomButton = document.getElementById("JoinRoomButton");
-const AnswerSelectorSubmitButton = document.getElementById("AnswerSelectorSubmitButton");
+const AnswerSelectorSubmitButton = document.getElementById(
+  "AnswerSelectorSubmitButton"
+);
 
 // Other UI
 const PlayerInfoCon = document.getElementById("PlayerInfoCon");
@@ -59,7 +61,9 @@ const WaitUiAdminButton = document.getElementById("WaitUiAdminButton");
 const AnswerCardText = document.getElementById("AnswerCardText");
 const AnswerCardText2 = document.getElementById("AnswerCardText2");
 const AnswerSelectorCon = document.getElementById("AnswerSelectorCon");
-const AnswerNumberSelectorRow = document.getElementById("AnswerNumberSelectorRow");
+const AnswerNumberSelectorRow = document.getElementById(
+  "AnswerNumberSelectorRow"
+);
 
 // State
 let roomCode = null;
@@ -144,12 +148,12 @@ CreateRoomButton.addEventListener("click", () => {
         isStartWaiting: true,
         currentAnswers: [],
         totalSubmissions: 0,
-        totalPlayers: 1 // Inizializza solo 1 giocatore (l'admin)
+        totalPlayers: 1, // Inizializza solo 1 giocatore (l'admin)
       })
       .then(() => {
         // Aumenta il totalPlayers solo una volta
         roomRef.child("totalPlayers").set(1);
-        
+
         // Avvia il monitoraggio dei giocatori
         monitorPlayersPfp();
 
@@ -159,8 +163,6 @@ CreateRoomButton.addEventListener("click", () => {
       });
   });
 });
-
-
 
 // Join Room
 JoinRoomButton.addEventListener("click", () => {
@@ -188,8 +190,10 @@ JoinRoomButton.addEventListener("click", () => {
         })
         .then(() => {
           // Aumenta il totalPlayers
-          roomRef.child("totalPlayers").transaction((currentTotal) => (currentTotal || 0) + 1);
-          
+          roomRef
+            .child("totalPlayers")
+            .transaction((currentTotal) => (currentTotal || 0) + 1);
+
           monitorPlayersPfp(); // Inizia a monitorare i giocatori
         });
 
@@ -205,7 +209,6 @@ JoinRoomButton.addEventListener("click", () => {
     }
   });
 });
-
 
 // Start game
 function startGame() {
@@ -249,7 +252,6 @@ function startGame() {
       console.error("Errore durante l'aggiornamento del round:", error);
     });
 }
-
 
 // Load Choose Answers UI
 function loadChooseAnswersUI() {
@@ -310,15 +312,15 @@ function loadChooseAnswersUI() {
 
       AnswerNumberSelectorRow.innerHTML = "";
       for (let i = 0; i < roomData.currentQuestion[1]; i++) {
-        AnswerNumberSelectorRow.innerHTML += `<div class="AnswerNumberSelectorPill" id="AnswerNumberSelectorPill${i + 1}" onclick="SelectSpace(${i + 1})">Space ${i + 1}</div>`;
+        AnswerNumberSelectorRow.innerHTML += `<div class="AnswerNumberSelectorPill" id="AnswerNumberSelectorPill${
+          i + 1
+        }" onclick="SelectSpace(${i + 1})">Space ${i + 1}</div>`;
       }
 
       SelectSpace(1);
     }
   });
 }
-
-
 
 // Select an answer div
 function SelectAnswerCard(index) {
@@ -336,7 +338,9 @@ function SelectAnswerCard(index) {
     currentCard.classList.add("SelectedAnswerCard"); // Aggiungi la classe per evidenziare la selezione
   } else {
     // Spazio già occupato: aggiorna il vecchio div e sostituisci con il nuovo
-    const previousCard = document.getElementById(`AnswerSelectorCard${previousIndex}`);
+    const previousCard = document.getElementById(
+      `AnswerSelectorCard${previousIndex}`
+    );
     if (previousCard) {
       previousCard.classList.remove("SelectedAnswerCard"); // Rimuovi la classe dal vecchio div
     }
@@ -346,7 +350,9 @@ function SelectAnswerCard(index) {
     // Scorri tutto SelectedAnswer e aggiorna le classi
     for (let i = 0; i < SelectedAnswer.length; i++) {
       if (i !== SelectedSpace) {
-        const cardToUpdate = document.getElementById(`AnswerSelectorCard${SelectedAnswer[i]}`);
+        const cardToUpdate = document.getElementById(
+          `AnswerSelectorCard${SelectedAnswer[i]}`
+        );
         if (cardToUpdate) {
           cardToUpdate.classList.add("SelectedAnswerCard"); // Aggiungi la classe a tutti i div corrispondenti agli indici selezionati
         }
@@ -357,12 +363,12 @@ function SelectAnswerCard(index) {
   console.log("Updated SelectedAnswer: ", SelectedAnswer);
 }
 
-
-
 // Select Space
 function SelectSpace(index) {
   const allPills = document.querySelectorAll(".AnswerNumberSelectorPill"); // Seleziona tutti i div con la classe AnswerNumberSelectorPill
-  const currentPill = document.getElementById(`AnswerNumberSelectorPill${index}`); // Div attualmente selezionato
+  const currentPill = document.getElementById(
+    `AnswerNumberSelectorPill${index}`
+  ); // Div attualmente selezionato
 
   console.log("SelectedSpace before update: ", SelectedSpace);
 
@@ -377,25 +383,26 @@ function SelectSpace(index) {
   // Aggiungi la classe al div corrente per evidenziare
   if (currentPill) {
     currentPill.classList.add("SelectedPill");
-    console.log(`Added class "SelectedPill" to element with ID "AnswerNumberSelectorPill${index}".`);
+    console.log(
+      `Added class "SelectedPill" to element with ID "AnswerNumberSelectorPill${index}".`
+    );
   }
 
   console.log("Updated SelectedSpace: ", SelectedSpace);
 }
 
-
-// Submit Answers 
+// Submit Answers
 function SubmitAnswers() {
   // Controlla se tutte le risposte sono state selezionate
   for (let i = 1; i < SelectedSpace; i++) {
     if (SelectedAnswer[i] === -1) {
-      alert("Please select all answers before submitting."); 
-      return; 
+      alert("Please select all answers before submitting.");
+      return;
     }
   }
 
   // Creazione di un array temporaneo
-  const tempSubmission = [playerId, []]; 
+  const tempSubmission = [playerId, []];
   console.log("SoloPlayerId: ", tempSubmission);
   console.log("TotalSpaces: ", TotalSpaces);
 
@@ -428,29 +435,34 @@ function SubmitAnswers() {
   });
 
   // Richiamare drawCardsFromDeck per pescare le carte rimanenti dal deckAnswers
-  drawCardsFromDeck("deckAnswers", SelectedSpace).then((drawnCards) => {
-    console.log("Drawn cards:", drawnCards);
+  drawCardsFromDeck("deckAnswers", SelectedSpace)
+    .then((drawnCards) => {
+      console.log("Drawn cards:", drawnCards);
 
-    // Aggiungere le carte pescate al deck del giocatore
-    PlayerDeck = PlayerDeck.concat(drawnCards);
-    console.log("Updated PlayerDeck with drawn cards:", PlayerDeck);
+      // Aggiungere le carte pescate al deck del giocatore
+      PlayerDeck = PlayerDeck.concat(drawnCards);
+      console.log("Updated PlayerDeck with drawn cards:", PlayerDeck);
 
-    // Sincronizzare tutto con Firebase
-    return roomRef.update({
-      [`players/${playerId}/deck`]: PlayerDeck, // Aggiorna il deck del giocatore
+      // Sincronizzare tutto con Firebase
+      return roomRef.update({
+        [`players/${playerId}/deck`]: PlayerDeck, // Aggiorna il deck del giocatore
+      });
+    })
+    .then(() => {
+      console.log("Deck aggiornato su Firebase con successo.");
+      alert("Answers submitted successfully!");
+      ChooseAnswersPageQuestioner.classList.remove("hidden");
+      ChooseAnswersPagePlayer.classList.add("hidden");
+
+      // Controlla se tutti hanno inviato le risposte
+      checkAllSubmissions();
+    })
+    .catch((error) => {
+      console.error("Error submitting answers:", error);
+      alert(
+        "An error occurred while submitting the answers. Please try again."
+      );
     });
-  }).then(() => {
-    console.log("Deck aggiornato su Firebase con successo.");
-    alert("Answers submitted successfully!");
-    ChooseAnswersPageQuestioner.classList.remove("hidden");
-    ChooseAnswersPagePlayer.classList.add("hidden");
-
-    // Controlla se tutti hanno inviato le risposte
-    checkAllSubmissions();
-  }).catch((error) => {
-    console.error("Error submitting answers:", error);
-    alert("An error occurred while submitting the answers. Please try again.");
-  });
 }
 
 // Check Submissions
@@ -475,7 +487,6 @@ function checkAllSubmissions() {
     }
   });
 }
-
 
 // Show Answers
 function showAnswersToAll() {
@@ -510,10 +521,6 @@ function showAnswersToAll() {
     });*/
   });
 }
-
-
-
-
 
 // Funzione per monitorare costantemente isRoundPlaying
 function monitorIsRoundPlaying() {
@@ -732,7 +739,8 @@ window.addEventListener("beforeunload", (event) => {
   const playerRef = roomRef.child("players/" + playerId);
 
   // Elimina il giocatore dalla stanza
-  playerRef.remove()
+  playerRef
+    .remove()
     .then(() => {
       console.log(`Player ${playerId} removed from the room.`);
     })
@@ -750,7 +758,8 @@ window.addEventListener("beforeunload", (event) => {
 
     if (roomData.host === playerId) {
       // Elimina l'intera stanza se il giocatore è l'admin
-      roomRef.remove()
+      roomRef
+        .remove()
         .then(() => {
           console.log(`Room ${roomCode} deleted as the admin left.`);
         })
@@ -761,16 +770,15 @@ window.addEventListener("beforeunload", (event) => {
   });
 });
 
-
 /* UI */
 // Buttons
 WaitUiAdminButton.addEventListener("click", () => {
   startGame();
 });
 
-AnswerSelectorSubmitButton.addEventListener("click", () =>{
+AnswerSelectorSubmitButton.addEventListener("click", () => {
   SubmitAnswers();
-})
+});
 
 // Carte e nomi
 /*Const decks (è troppo lunga per inserirla qui.)
@@ -1523,6 +1531,30 @@ const nounsAndAdjectives = {
     "Pasqualino",
     "Simonetta",
     "Giovanni",
+    "Natalia",
+    "Anastasia",
+    "Girolamo",
+    "Ernesto",
+    "Ambrogio",
+    "Ettorina",
+    "Onorino",
+    "Giandomenica",
+    "Natalino",
+    "Romualda",
+    "Melania",
+    "Reginaldo",
+    "Percivaldo",
+    "Flaviana",
+    "Manuela",
+    "Madonna",
+    "Gabibbo",
+    "Calimero",
+    "Mussolini",
+    "Marilina",
+    "Michael Jackson",
+    "Orietta Berti",
+    "Gerry Scotti",
+    "Maria de Filippi",
   ],
   adjectives: [
     "Vibrante",
@@ -1557,5 +1589,14 @@ const nounsAndAdjectives = {
     "Mani rapide",
     "Imprecante",
     "Salivante",
+    "Ortofruttante",
+    "Strimpellante",
+    "Seno esplosivo",
+    "Passione fisting",
+    "Saccente",
+    "Ano dilatato",
+    "Comunista",
+    "Fascista",
+    "Eccessivamente omosessuale",
   ],
 };
