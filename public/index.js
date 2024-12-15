@@ -266,12 +266,14 @@ function loadChooseAnswersUI() {
       return;
     }
 
+    // Controlla se tutti hanno inviato le risposte
+    checkAllSubmissions();
+
     const currentQuestioner = roomData.currentQuestioner; // Chi fa la domanda
     const currentQuestion = roomData.currentQuestion; // La domanda attuale
 
-    SelectedSpace = currentQuestion[1]
-    TotalSpaces = currentQuestion[1]
-    
+    SelectedSpace = currentQuestion[1];
+    TotalSpaces = currentQuestion[1];
 
     console.log("Auth UID:", playerId);
     console.log("Current Questioner:", currentQuestioner);
@@ -304,25 +306,18 @@ function loadChooseAnswersUI() {
           </div>
         `;
       });
-      AnswerSelectorCon.innerHTML += "<br>"
+      AnswerSelectorCon.innerHTML += "<br>";
 
       AnswerNumberSelectorRow.innerHTML = "";
-      for(let i = 0; i < roomData.currentQuestion[1]; i++){
+      for (let i = 0; i < roomData.currentQuestion[1]; i++) {
         AnswerNumberSelectorRow.innerHTML += `<div class="AnswerNumberSelectorPill" id="AnswerNumberSelectorPill${i + 1}" onclick="SelectSpace(${i + 1})">Space ${i + 1}</div>`;
       }
 
       SelectSpace(1);
-
-      /*
-      document.querySelectorAll(".SelctableCard").forEach((element, index) => {
-        element.addEventListener("click", () => {
-          SelectAnswerCard(index); // Passa l'indice della carta selezionata
-        });
-      });*/
     }
-
   });
 }
+
 
 
 // Select an answer div
@@ -389,7 +384,7 @@ function SelectSpace(index) {
 }
 
 
-// Submit Answers
+// Submit Answers 
 function SubmitAnswers() {
   // Controlla se tutte le risposte sono state selezionate
   for (let i = 1; i < SelectedSpace; i++) {
@@ -449,9 +444,70 @@ function SubmitAnswers() {
     alert("Answers submitted successfully!");
     ChooseAnswersPageQuestioner.classList.remove("hidden");
     ChooseAnswersPagePlayer.classList.add("hidden");
+
+    // Controlla se tutti hanno inviato le risposte
+    checkAllSubmissions();
   }).catch((error) => {
     console.error("Error submitting answers:", error);
     alert("An error occurred while submitting the answers. Please try again.");
+  });
+}
+
+// Check Submissions
+function checkAllSubmissions() {
+  roomRef.once("value", (snapshot) => {
+    const roomData = snapshot.val();
+
+    if (!roomData) {
+      console.error("Room data not found!");
+      return;
+    }
+
+    const totalSubmissions = roomData.totalSubmissions || 0;
+    const totalPlayers = Object.keys(roomData.players || {}).length;
+
+    console.log(`Submissions: ${totalSubmissions}, Players: ${totalPlayers}`);
+
+    // Controlla se tutti hanno inviato le risposte (totalPlayers - 1 perché uno è il questioner)
+    if (totalSubmissions === totalPlayers - 1) {
+      console.log("All players have submitted their answers!");
+      showAnswersToAll();
+    }
+  });
+}
+
+
+// Show Answers
+function showAnswersToAll() {
+  roomRef.child("submittedAnswers").once("value", (snapshot) => {
+    const submittedAnswers = snapshot.val();
+
+    if (!submittedAnswers) {
+      console.error("No answers submitted!");
+      return;
+    }
+
+    console.log("Submitted answers:", submittedAnswers);
+
+    /*
+    // Mostra le risposte a tutti i giocatori (modifica questa parte per la tua UI)
+    DisplayAnswersPage.classList.remove("hidden");
+    ChooseAnswersPagePlayer.classList.add("hidden");
+    ChooseAnswersPageQuestioner.classList.add("hidden");
+
+    // Aggiorna l'interfaccia con le risposte
+    AnswersContainer.innerHTML = "";
+    Object.values(submittedAnswers).forEach((submission) => {
+      const playerId = submission[0];
+      const answers = submission[1];
+
+      AnswersContainer.innerHTML += `
+        <div class="PlayerSubmission">
+          <h3>Player ${playerId}</h3>
+          <p>${answers.join(", ")}</p>
+        </div>
+      `;
+    });*/
   });
 }
 
@@ -664,6 +720,47 @@ function assignInitialCardsToPlayers(roomId) {
       console.error("Error assigning cards:", error);
     });
 }
+
+// Elimina player
+window.addEventListener("beforeunload", (event) => {
+  // Prevenire l'uscita immediata (opzionale, ma supportato solo in alcuni browser)
+  event.preventDefault();
+  event.returnValue = "";
+
+  // Ottieni il riferimento alla stanza e ai dati del giocatore
+  const roomRef = db.ref("rooms/" + roomCode);
+  const playerRef = roomRef.child("players/" + playerId);
+
+  // Elimina il giocatore dalla stanza
+  playerRef.remove()
+    .then(() => {
+      console.log(`Player ${playerId} removed from the room.`);
+    })
+    .catch((error) => {
+      console.error("Error removing player from the room:", error);
+    });
+
+  // Controlla se il giocatore è l'admin della stanza
+  roomRef.once("value", (snapshot) => {
+    const roomData = snapshot.val();
+    if (!roomData) {
+      console.warn("Room not found.");
+      return;
+    }
+
+    if (roomData.host === playerId) {
+      // Elimina l'intera stanza se il giocatore è l'admin
+      roomRef.remove()
+        .then(() => {
+          console.log(`Room ${roomCode} deleted as the admin left.`);
+        })
+        .catch((error) => {
+          console.error("Error deleting the room:", error);
+        });
+    }
+  });
+});
+
 
 /* UI */
 // Buttons
