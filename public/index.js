@@ -69,6 +69,8 @@ let playerRef = null;
 
 let playerName = "";
 let playerPfp = 1;
+let SelectedSpace = 1;
+let SelectedAnswer = [];
 
 // Funzione per caricare i deck
 function loadDecks() {
@@ -277,7 +279,7 @@ function loadChooseAnswersUI() {
       // Aggiunge un div per ogni carta nel mazzo del giocatore
       cardsDeck.forEach((card, index) => {
         AnswerSelectorCon.innerHTML += `
-          <div class="AnswerSelectorCard" id="AnswerSelectorCard${index}">
+          <div class="AnswerSelectorCard" id="AnswerSelectorCard${index}" onclick="SelectAnswerCard(${index})">
             <h3 class="MediumText BlackText">✦ Risposta</h3>
             <h2 class="SemiBigText BlackText">${card[0]}</h2> <!-- Mostra la risposta -->
           </div>
@@ -288,10 +290,37 @@ function loadChooseAnswersUI() {
       for(let i = 0; i < roomData.currentQuestion[1]; i++){
         AnswerNumberSelectorRow.innerHTML += `<div class="AnswerNumberSelectorPill" id="AnswerNumberSelectorPill${i + 1}">Space ${i + 1}</div>`;
       }
+
+      /*
+      document.querySelectorAll(".SelctableCard").forEach((element, index) => {
+        element.addEventListener("click", () => {
+          SelectAnswerCard(index); // Passa l'indice della carta selezionata
+        });
+      });*/
     }
 
   });
 }
+
+function SelectAnswerCard(index) {
+  const cardElement = document.getElementById(`AnswerSelectorCard${index}`); // Seleziona la carta tramite ID
+  
+  console.log("cardElement ", cardElement)
+  console.log("index ", index)
+
+  if (!SelectedAnswer.includes(index)) {
+    // Se l'indice non è presente in SelectedAnswer, lo aggiunge
+    SelectedAnswer.push(index);
+    cardElement.classList.add("SelectedAnswerCard"); // Aggiunge la classe
+  } else {
+    // Se l'indice è già presente, lo rimuove
+    SelectedAnswer = SelectedAnswer.filter((i) => i !== index); // Rimuove l'indice dall'array
+    cardElement.classList.remove("SelectedAnswerCard"); // Rimuove la classe
+  }
+
+  console.log("SelectedAnswers:", SelectedAnswer); // Per debugging
+}
+
 
 // Funzione per monitorare costantemente isRoundPlaying
 function monitorIsRoundPlaying() {
