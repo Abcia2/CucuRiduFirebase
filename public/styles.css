@@ -1,4 +1,91 @@
 @import url('https://fonts.googleapis.com/css2?family=Chewy&display=swap');
+html {
+  box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+body {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+body {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+button {
+  border: none;
+  outline: none;
+  background: none;
+}
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+* {
+  transition: all 0.3s ease-in;
+}
+
+a {
+  text-decoration: none;
+  
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  margin-block-start: 0;
+    margin-block-end: 0;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d46d9662;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a3205062;
+}
 
 .chewy-regular {
   font-family: "Chewy", system-ui;
@@ -50,7 +137,7 @@ body {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  background-color: #DC557D;
+  
   font-size: 16px;
   font-family: Chewy, system-ui;
 }
@@ -61,6 +148,14 @@ body {
 
 .Button1:active{
   opacity: 50%;
+}
+
+.PinkButton{
+  background-color: #DC557D;
+}
+
+.GreenButton{
+  background-color: #9DD370;
 }
 
 /**/
@@ -93,12 +188,26 @@ body {
   height: 60px;
   border-radius: 50%;
   object-fit: cover; /* Per mantenere le proporzioni corrette */
+  border: solid 3px #121212;
 }
 
 .PlayerPfpText {
   font-size: 14px;
   margin-top: 5px;
-  color: #121212; /* Stesso colore del testo */
+}
+
+@media screen and (orientation: portrait) {
+  .PlayerPfpImg {
+    width: 40px; /* Dimensione delle immagini */
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover; /* Per mantenere le proporzioni corrette */
+  }
+
+  .PlayerPfpText {
+    font-size: 10px;
+    margin-top: 3px;
+  }
 }
 
 
@@ -110,6 +219,10 @@ body {
 
 .BlackText {
   color: #121212;
+}
+
+.BlackBorder3 {
+  border: solid 3px #121212;
 }
 
 /*********************************/

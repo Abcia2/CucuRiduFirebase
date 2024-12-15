@@ -10,15 +10,11 @@ const firebaseConfig = {
   appId: "1:247195463484:web:a2b363e18fadd979343839",
 };
 
-
-
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
-
-
-
+const pfpCount = 7;
 
 // DOM Elements
 const initialScreen = document.getElementById("initial-screen");
@@ -34,6 +30,7 @@ const CreateRoomButton = document.getElementById("CreateRoomButton");
 const JoinRoomButton = document.getElementById("JoinRoomButton");
 
 // Other UI
+const PlayersPfpRowCon = document.getElementById("PlayersPfpRowCon");
 
 const roomCodeInput = document.getElementById("room-code-input");
 const roomCodeDisplay = document.getElementById("room-code-display");
@@ -50,28 +47,22 @@ const responsesContainer = document.getElementById("responses-container");
 const responses = document.getElementById("responses");
 const chooseWinnerBtn = document.getElementById("choose-winner-btn");
 
-
-
 // State
 let roomCode = null;
 let playerId = null;
 let isHost = false;
-let roomRef  = null;
+let roomRef = null;
 let playerRef = null;
-
-
 
 // Funzione per caricare i deck
 function loadDecks() {
   return new Promise((resolve, reject) => {
     resolve({
       deckQuestions: decks.deckQuestions || [],
-      deckAnswers: decks.deckAnswers || []
+      deckAnswers: decks.deckAnswers || [],
     });
   });
 }
-
-
 
 // Funzione per mescolare un array
 function shuffleArray(array) {
@@ -81,50 +72,51 @@ function shuffleArray(array) {
   }
 }
 
-
-
 // Authentication
 auth.signInAnonymously().then(() => {
   playerId = auth.currentUser.uid;
 });
 
-
-
 // Create Room
 CreateRoomButton.addEventListener("click", () => {
   loadDecks().then((decks) => {
+    // Genera un codice stanza univoco
     roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     shuffleArray(decks.deckQuestions);
     shuffleArray(decks.deckAnswers);
     isHost = true;
 
-    roomRef = firebase.database().ref('rooms/' + roomCode);
+    // Crea un riferimento alla stanza
+    roomRef = firebase.database().ref("rooms/" + roomCode);
 
-    roomRef.set({
-      host: playerId,
-      players: {
-        [playerId]: {
-          name: generatePlayerName(),
-          deck: [],
-          wins: 0,
-          isAsking: false,
-          profilePicture: Math.floor(Math.random() * 10),
+    // Imposta i dati iniziali della stanza
+    roomRef
+      .set({
+        host: playerId,
+        players: {
+          [playerId]: {
+            name: generatePlayerName(),
+            deck: [],
+            wins: 0,
+            isAsking: false,
+            profilePicture: generatePlayerPfp(),
+          },
         },
-      },
-      deckQuestions: decks.deckQuestions,
-      deckAnswers: decks.deckAnswers,
-      currentRound: null,
-      isRoundPlaying: false,
-      isStartWaiting: true,
-    });
+        deckQuestions: decks.deckQuestions,
+        deckAnswers: decks.deckAnswers,
+        currentRound: null,
+        isRoundPlaying: false,
+        isStartWaiting: true,
+      })
+      .then(() => {
+        // Avvia il monitoraggio dei giocatori
+        monitorPlayers();
 
-    ChangeScreen(FirstPage, WaitingToStartPage);
-    //switchToRoomScreen(roomCode);
+        // Cambia schermata
+        ChangeScreen(FirstPage, WaitingToStartPage);
+      });
   });
 });
-
-
-
 
 // Join Room
 JoinRoomButton.addEventListener("click", () => {
@@ -132,29 +124,35 @@ JoinRoomButton.addEventListener("click", () => {
   isHost = false;
 
   // Check if the room is waiting to start
-  db.ref(`rooms/${roomCode}/isStartWaiting`).once('value', (snapshot) => {
+  db.ref(`rooms/${roomCode}/isStartWaiting`).once("value", (snapshot) => {
     if (snapshot.val() === true) {
-      roomRef = firebase.database().ref('rooms/' + roomCode);
+      roomRef = firebase.database().ref("rooms/" + roomCode);
 
-      roomRef.child(`players/${playerId}`).set({
-        name: generatePlayerName(),
-        deck: [],
-        wins: 0,
-        isAsking: false,
-        profilePicture: Math.floor(Math.random() * 7) + 1,
-      });
+      // Dopo che il giocatore si unisce
+      roomRef
+        .child(`players/${playerId}`)
+        .set({
+          name: generatePlayerName(),
+          deck: [],
+          wins: 0,
+          isAsking: false,
+          profilePicture: generatePlayerPfp(),
+        })
+        .then(() => {
+          monitorPlayers(); // Inizia a monitorare i giocatori
+        });
 
       ChangeScreen(FirstPage, WaitingToStartPage);
       //switchToRoomScreen(roomCode);
+      UpdateProfilesRow();
       monitorIsRoundPlaying();
     } else {
-      alert("The room is not waiting to start. Please wait until the admin starts the game.");
+      alert(
+        "The room is not waiting to start. Please wait until the admin starts the game."
+      );
     }
   });
 });
-
-
-
 
 // Start game
 function startGame() {
@@ -163,7 +161,7 @@ function startGame() {
   // Aggiorna la stanza impostando isWaiting a false e l'admin come currentQuestioner
   roomRef.update({
     isStartWaiting: false,
-    currentQuestioner: playerId
+    currentQuestioner: playerId,
   });
 
   // Assegna a tutti i giocatori le 11 carte risposta
@@ -174,63 +172,127 @@ function startGame() {
 
   roomRef.update({
     isRoundPlaying: true,
-    roundPhase: 1, 
+    roundPhase: 1,
     currentRound: {
-      currentQuestion: currentQuestion,  // ["domanda" , n spazi vuoti]
+      currentQuestion: currentQuestion, // ["domanda" , n spazi vuoti]
       answers: [],
-      winner: null
-    }
+      winner: null,
+    },
   });
 
-  console.log("RoundStarted")
+  console.log("RoundStarted");
 }
-
-
 
 // Funzione per monitorare costantemente isRoundPlaying
 function monitorIsRoundPlaying() {
-  const roomRef = db.ref('rooms/' + roomCode);
+  const roomRef = db.ref("rooms/" + roomCode);
 
   // Ascolta i cambiamenti di isRoundPlaying
-  roomRef.child('isRoundPlaying').on('value', snapshot => {
+  roomRef.child("isRoundPlaying").on("value", (snapshot) => {
     if (snapshot.val() === true) {
       // Il round è iniziato, fai qualcosa per notificare i giocatori
-      console.log("RoundStarted")
+      console.log("RoundStarted");
     }
   });
 }
 
-
-
-
-
 // Show question and answers
 function showQuestionAndAnswers() {
-  roomRef.once('value').then(snapshot => {
+  roomRef.once("value").then((snapshot) => {
     const room = snapshot.val();
     const currentQuestionerUid = room.currentQuestioner;
 
     if (currentQuestionerUid === playerId) {
       // Visualizza le risposte anonime
-      db.ref(`rooms/${roomCode}/currentRound/answers`).once("value", snapshot => {
-        const answers = snapshot.val();
-        console.log("Answers:", answers);
+      db.ref(`rooms/${roomCode}/currentRound/answers`).once(
+        "value",
+        (snapshot) => {
+          const answers = snapshot.val();
+          console.log("Answers:", answers);
 
-        // Mostra le risposte a chi fa la domanda
-        // Qui puoi gestire il UI per mostrare le risposte anonime
-      });
+          // Mostra le risposte a chi fa la domanda
+          // Qui puoi gestire il UI per mostrare le risposte anonime
+        }
+      );
     }
   });
 }
 
-
-
 // Switch to Room Screen
-function ChangeScreen(toHide, toShow){
+function ChangeScreen(toHide, toShow) {
   toHide.classList.add("hidden");
   toShow.classList.remove("hidden");
 }
 
+// Update Profiles Row
+function UpdateProfilesRow() {
+  const playersRef = db.ref(`rooms/${roomCode}/players`);
+
+  playersRef.once("value", (snapshot) => {
+    const players = snapshot.val(); // Ottieni tutti i giocatori come oggetto
+
+    console.log(players);
+
+    if (players) {
+      // Creiamo un set per tenere traccia dei giocatori esistenti
+      const currentPlayers = new Set(Object.keys(players));
+
+      // Rimuovi i div per i giocatori non più presenti
+      document.querySelectorAll(".PlayerPfpCon").forEach((div) => {
+        const playerId = div.getAttribute("playerId");
+        if (!currentPlayers.has(playerId)) {
+          div.remove();
+        }
+      });
+
+      // Itera su ciascun giocatore e aggiungilo se non è già presente
+      Object.entries(players).forEach(([playerId, playerData]) => {
+        if (!document.querySelector(`.PlayerPfpCon[playerId="${playerId}"]`)) {
+          // Aggiungi solo i giocatori non ancora visibili
+          PlayersPfpRowCon.innerHTML += `<div class="PlayerPfpCon" playerId="${playerId}">
+            <img src="./Assets/PfP/${playerData.profilePicture}.png" alt="PFP" class="PlayerPfpImg BlackBorder3">
+            <h3 class="PlayerPfpText BlackText">${playerData.name}</h3>
+          </div>`;
+        }
+      });
+    } else {
+      console.log("No players found in the room.");
+      // Rimuovi tutti i giocatori se non ce ne sono più
+      PlayersPfpRowCon.innerHTML = "";
+    }
+  });
+}
+
+// Update Profiles Row in real-time
+function monitorPlayers() {
+  const playersRef = db.ref(`rooms/${roomCode}/players`);
+
+  // Listener per nuovi giocatori aggiunti
+  playersRef.on("child_added", (snapshot) => {
+    const playerId = snapshot.key; // ID del giocatore
+    const playerData = snapshot.val(); // Dati del giocatore
+
+    // Aggiorna la UI per il nuovo giocatore
+    PlayersPfpRowCon.innerHTML += `<div class="PlayerPfpCon" playerId="${playerId}">
+      <img src="./Assets/PfP/${playerData.profilePicture}.png" alt="PFP" class="PlayerPfpImg">
+      <h3 class="PlayerPfpText BlackText">${playerData.name}</h3>
+    </div>`;
+  });
+
+  // Optional: Listener per aggiornare l'intera lista se necessario
+  playersRef.on("value", (snapshot) => {
+    const players = snapshot.val();
+    PlayersPfpRowCon.innerHTML = "";
+    if (players) {
+      Object.entries(players).forEach(([playerId, playerData]) => {
+        PlayersPfpRowCon.innerHTML += `<div class="PlayerPfpCon" playerId="${playerId}">
+          <img src="./Assets/PfP/${playerData.profilePicture}.png" alt="PFP" class="PlayerPfpImg">
+          <h3 class="PlayerPfpText BlackText">${playerData.name}</h3>
+        </div>`;
+      });
+    }
+  });
+}
 
 function switchToRoomScreen(code) {
   initialScreen.classList.add("hidden");
@@ -238,22 +300,24 @@ function switchToRoomScreen(code) {
   roomCodeDisplay.textContent = code;
 
   // Check if user is Admin
-  db.ref(`rooms/${code}`).once("value").then(snapshot => {
-    const room = snapshot.val();
-    startGameBtn.classList.add("hidden");
-      waitingMessage.classList.remove("hidden");
-
-    console.log("me:", playerId, "admin:", room.host)
-    if (playerId === room.host) {
-      console.log("è host")
-      startGameBtn.classList.remove("hidden");
-      waitingMessage.classList.add("hidden");
-    } else {
-      console.log("NOT host")
+  db.ref(`rooms/${code}`)
+    .once("value")
+    .then((snapshot) => {
+      const room = snapshot.val();
       startGameBtn.classList.add("hidden");
       waitingMessage.classList.remove("hidden");
-    }
-  });
+
+      console.log("me:", playerId, "admin:", room.host);
+      if (playerId === room.host) {
+        console.log("è host");
+        startGameBtn.classList.remove("hidden");
+        waitingMessage.classList.add("hidden");
+      } else {
+        console.log("NOT host");
+        startGameBtn.classList.add("hidden");
+        waitingMessage.classList.remove("hidden");
+      }
+    });
 
   // Listener per aggiornare l'elenco dei giocatori
   db.ref(`rooms/${code}/players`).on("value", (snapshot) => {
@@ -267,109 +331,120 @@ function switchToRoomScreen(code) {
   });
 }
 
-
-
-
 function showQuestionAndAnswers() {
-  
   // Ottieni la stanza
-  roomRef.once('value').then(snapshot => {
+  roomRef.once("value").then((snapshot) => {
     const room = snapshot.val();
     const currentQuestionerUid = room.currentQuestioner;
 
     // Mostra la domanda e le risposte a chi deve rispondere
     if (currentQuestionerUid === playerId) {
-      console.log(currentQuestion.currentQuestion)
+      console.log(currentQuestion.currentQuestion);
       //document.getElementById('question').innerText = currentQuestion.currentQuestion;
       //document.getElementById('answer-section').style.display = 'block'; // Mostra la UI di risposta
     }
   });
 }
 
-
-
 // Generate Random Player Name
 function generatePlayerName() {
-  return `${nounsAndAdjectives.names[Math.floor(Math.random() * nounsAndAdjectives.names.length)]} ${
-    nounsAndAdjectives.adjectives[Math.floor(Math.random() * nounsAndAdjectives.adjectives.length)]
+  return `${
+    nounsAndAdjectives.names[
+      Math.floor(Math.random() * nounsAndAdjectives.names.length)
+    ]
+  } ${
+    nounsAndAdjectives.adjectives[
+      Math.floor(Math.random() * nounsAndAdjectives.adjectives.length)
+    ]
   }`;
 }
 
-
+function generatePlayerPfp() {
+  return Math.floor(Math.random() * pfpCount) + 1;
+}
 
 // Pesca carte
 function drawCardsFromDeck(deckPath, count) {
   const drawnCards = [];
 
-  return roomRef.child(deckPath).transaction((currentDeck) => {
-    //console.log("Current Deck:", currentDeck);
-    if (Array.isArray(currentDeck) && currentDeck.length >= count) {
-      // Estrai le ultime `count` carte
-      drawnCards.push(...currentDeck.slice(-count).map(card => [...card]));
-      // Rimuovi le carte pescate dal mazzo
-      return currentDeck.slice(0, -count);
-    } else {
-      //console.error("Not enough cards in the deck or invalid deck structure!");
-      return currentDeck || []; // Ritorna il mazzo originale o un array vuoto
-    }
-  }).then(() => {
-    return drawnCards; // Restituisci le carte pescate
-  }).catch((error) => {
-    //console.error("Error drawing cards:", error);
-    return [];
-  });
+  return roomRef
+    .child(deckPath)
+    .transaction((currentDeck) => {
+      //console.log("Current Deck:", currentDeck);
+      if (Array.isArray(currentDeck) && currentDeck.length >= count) {
+        // Estrai le ultime `count` carte
+        drawnCards.push(...currentDeck.slice(-count).map((card) => [...card]));
+        // Rimuovi le carte pescate dal mazzo
+        return currentDeck.slice(0, -count);
+      } else {
+        //console.error("Not enough cards in the deck or invalid deck structure!");
+        return currentDeck || []; // Ritorna il mazzo originale o un array vuoto
+      }
+    })
+    .then(() => {
+      return drawnCards; // Restituisci le carte pescate
+    })
+    .catch((error) => {
+      //console.error("Error drawing cards:", error);
+      return [];
+    });
 }
 function drawQuestion() {
   let drawnQuestion = null;
 
-  return roomRef.child('deckQuestions').transaction((currentDeck) => {
-    //console.log("Current Questions Deck:", currentDeck);
-    if (Array.isArray(currentDeck) && currentDeck.length > 0) {
-      // Estrai l'ultima domanda
-      drawnQuestion = [...currentDeck.slice(-1)[0]];
-      return currentDeck.slice(0, -1); // Rimuovi la domanda pescata
-    } else {
-      //console.error("No more questions in the deck or invalid deck structure!");
-      return currentDeck || []; // Ritorna il mazzo originale o un array vuoto
-    }
-  }).then(() => {
-    return drawnQuestion; // Restituisci la domanda pescata
-  }).catch((error) => {
-    console.error("Error drawing question:", error);
-    return null;
-  });
+  return roomRef
+    .child("deckQuestions")
+    .transaction((currentDeck) => {
+      //console.log("Current Questions Deck:", currentDeck);
+      if (Array.isArray(currentDeck) && currentDeck.length > 0) {
+        // Estrai l'ultima domanda
+        drawnQuestion = [...currentDeck.slice(-1)[0]];
+        return currentDeck.slice(0, -1); // Rimuovi la domanda pescata
+      } else {
+        //console.error("No more questions in the deck or invalid deck structure!");
+        return currentDeck || []; // Ritorna il mazzo originale o un array vuoto
+      }
+    })
+    .then(() => {
+      return drawnQuestion; // Restituisci la domanda pescata
+    })
+    .catch((error) => {
+      console.error("Error drawing question:", error);
+      return null;
+    });
 }
-
-
-
 
 function assignInitialCardsToPlayers(roomId) {
-  const roomRef = firebase.database().ref('rooms/' + roomId);
+  const roomRef = firebase.database().ref("rooms/" + roomId);
 
-  roomRef.child('players').once('value').then((snapshot) => {
-    const players = snapshot.val();
+  roomRef
+    .child("players")
+    .once("value")
+    .then((snapshot) => {
+      const players = snapshot.val();
 
-    const promises = Object.keys(players).map((playerId) => {
-      return drawCardsFromDeck('deckAnswers', 11).then((cards) => {
-        return roomRef.child(`players/${playerId}`).update({
-          deck: cards,
+      const promises = Object.keys(players).map((playerId) => {
+        return drawCardsFromDeck("deckAnswers", 11).then((cards) => {
+          return roomRef.child(`players/${playerId}`).update({
+            deck: cards,
+          });
         });
       });
+
+      return Promise.all(promises);
+    })
+    .then(() => {
+      console.log("Initial cards assigned to all players.");
+    })
+    .catch((error) => {
+      console.error("Error assigning cards:", error);
     });
-
-    return Promise.all(promises);
-  }).then(() => {
-    console.log("Initial cards assigned to all players.");
-  }).catch((error) => {
-    console.error("Error assigning cards:", error);
-  });
 }
-
 
 /* UI */
 // Admin Start Game
 startGameBtn.addEventListener("click", () => {
-  startGame()
+  startGame();
 });
 
 // Carte e nomi
@@ -404,7 +479,7 @@ const decks = {
     ["Ti voglio bene ma capirai che _ non è una cosa accettabile", 1],
     [
       "_ è una cosa che viene tramandata con amore da padre in figlio da generazioni",
-      1
+      1,
     ],
     ["Il mio love language è _", 1],
     ["Chi cerca il benessere lo trova in _", 1],
@@ -419,23 +494,24 @@ const decks = {
     ["Se continui ad evitare _ la conseguenza sarà _", 2],
     [
       "Nello spettacolo di ieri io ho interpretato _ che _ , il pubblico è stato così commosso che ha deciso di _",
-      3
+      3,
     ],
     ["La mancia della nonna mi permetterà di prendere _", 1],
     ["Non capisco la lingua dei segni, non è che per caso potresti _?", 1],
     [
       "Penso che _ sia un fattore fondante della società moderna, ma senza _ questa non sarebbe nata",
-      2
+      2,
     ],
     ["È inutile che mi dici di _ , la mia idea di _ è sempre la migliore", 2],
     [
       "Dovevi esserci quando Michael Jackson ha fatto la sua iconica performance con _",
-      1],
+      1,
+    ],
     ["Dovevo studiare, ma ho preferito _", 1],
     ["_ , i soldi sono soldi", 1],
     [
       "_ sono il nemico della società, basterebbe _ e il mondo sarebbe migliore",
-      2
+      2,
     ],
     ["Come osi criticare _ , senza non saresti qui", 1],
     ["La NASA ha inviato nello spazio _", 1],
@@ -447,7 +523,7 @@ const decks = {
     ["Il mio roman empire è _", 1],
     [
       "Secondo l'oroscopo è l'ora di _ , ma preferisco rimanere a casa mia con  _",
-      2
+      2,
     ],
     ["_ è un modo per fermare la guerra", 1],
     ["Non mi piace il pene ma per _ un pompino lo farei", 1],
@@ -463,7 +539,7 @@ const decks = {
     ["Non è un venerdì sera senza _", 1],
     [
       "Questo weekend il solito: venerdì sera _ , sabato _ e domenica mattina _",
-      3
+      3,
     ],
     ["_ : i ricordi del Vietnam", 1],
     ["Contattare c'è Posta Per Te per _", 1],
@@ -473,7 +549,7 @@ const decks = {
     ["Soluzione per un appartamento perfetto? _", 1],
     [
       "Dopo 30 anni di matrimonio io e mio marito abbiamo trovato un modo per mantenere viva la passione: _",
-      1
+      1,
     ],
     ["Ogni brava moglie cristiana sa che è necessario _", 1],
     ["_ ha causato l'esplosione del Titan", 1],
@@ -491,20 +567,24 @@ const decks = {
     ["_ . Disse il mostro di Firenze in tribunale", 1],
     [
       "'Vai al supermercato, prendimi _ e _ , poi compra quel che vuoi' 'va bene, anche _?' 'va bene, i bisogni sono bisogni'",
-      3],
+      3,
+    ],
     ["Usare _ come giocattolo anale non è molto conveniente", 1],
     ["Divorzio di Chiara Ferragni e Fedez, sentiamo cosa ne pensa _ !", 1],
     ["Voglio _ adesso! In questo esatto istante!", 1],
     [
       "Se non hai mai provato _ , dovresti chiedere a suor Claudia, è un'esperta",
-      1],
+      1,
+    ],
     [
       "L'undicesimo comandamento, mai citato nei libri di chiesa, mi pare che sia riguardo a _, ma non ne sono certo",
-      1],
+      1,
+    ],
     ["I libri di storia descrivono l'ascesa di Mussoli come _", 1],
     [
       "Solo un vero critico letterario può capire che dietro la figura di Leopardi si celava _",
-      1],
+      1,
+    ],
     ["_ : perfetto per quando ho del tempo libero", 1],
     ["_ è una brutta abitudine", 1],
     ["Per buttare giù un po' di chili dovresti iniziare a _", 1],
@@ -513,17 +593,20 @@ const decks = {
     ["_ , disse il poeta guardando il cielo stellato", 1],
     [
       "Ogni stagione ha i propri bisogni: primavera: _ , estate: _ , autunno:  _ e inverno: _",
-      4],
+      4,
+    ],
     ["Ho preso 3 perchè non ho saputo come _", 1],
     ["Il medico consiglia _ come lubrificante prima di un rapporto anale", 1],
     ["_ a 90° sul letto della pimpa", 1],
     ["_ , da aggiungere alla smash cake", 1],
     [
       "Ma solo io mi ricordo quell'episodio di Dora l'esploratrice intitolato _",
-      1],
+      1,
+    ],
     [
       "Sulla tomba voglio scrivere 'ho vissuto una vita fatta di sesso, droga e _'",
-      1],
+      1,
+    ],
     ["Il mio cane non smette di _", 1],
     ["Per problemi come _ digitare 1, se invece ha bisogno di _ digitare 2", 2],
     ["_ MA È INACETTABILE, DISONESTO, IL PEGGIO DEL PEGGIO!", 1],
@@ -535,7 +618,8 @@ const decks = {
     ["_ , il premio nobel per la scienza di quest'anno", 1],
     [
       "Il cast del film che ha vinto gli Oscar aveva _ e _ ,  era una storia d'amore, finita male",
-      2],
+      2,
+    ],
     ["Ho trovato come sorpresa nell'uovo di pasqua _", 1],
     ["Prendo l'happy meal solo per _", 1],
     ["_ , testato dai bambini, approvato dalle madri", 1],
@@ -546,7 +630,8 @@ const decks = {
     ["Non sono riuscito a studiare per colpa di _", 1],
     [
       "Per mostrare solidarietà dopo le partite di calcio, il gesto dei calciatori è _",
-      1],
+      1,
+    ],
     ["Se la vita ti dà dei limoni, facci _", 1],
     ["Papà, io da grande voglio essere _", 1],
     ["Il tempo è _", 1],
@@ -565,7 +650,8 @@ const decks = {
     ["_ fu la chiave di volta per il caso Orlandi", 1],
     [
       "Non so con cosa verrà combattuto la terza guerra mondiale, ma nella quarta si useranno _",
-      1],
+      1,
+    ],
     ["_ . Raccomando da 9 dentisti su 10", 1],
     ["Prossimamente su Rai sport 2: i mondiali di _", 1],
     ["Se dovesse finire il mondo vorrei solo un'ultima cosa: _", 1],
@@ -573,7 +659,8 @@ const decks = {
     ["La scuola insegna anche a _", 1],
     [
       "Quali sono i 3 desideri che chiederesti al genio della lampada? _ , _ e _",
-      3],
+      3,
+    ],
     ["Mi son dimenticat* di _", 1],
     ["_ . Così è come voglio morire!", 1],
     ["In un mondo depredato da _ , il nostro unico conforto è _", 2],
@@ -655,7 +742,8 @@ const decks = {
     ["Un pigiama con le righe e una stella gialla ", 0],
     [
       "Non andare a prendere la propria fidanzata alle elementari perché ti ha tradito ",
-      0],
+      0,
+    ],
     ["Lezione pratica di educazione sessuale con un prete", 0],
     ["Un'orgia di frati benedettini", 0],
     ["Vivere come in 1984", 0],
@@ -669,7 +757,8 @@ const decks = {
     ["L'undici settembre 2001", 0],
     [
       "Scoprire che il tuo idolo si è suicidato guardando un documentario sulla seconda guerra mondiale ",
-      0],
+      0,
+    ],
     ["Andare in coma etilico bevendo l'ACE Gentile ", 0],
     ["Il comeback di Mozart prima di GTA VI", 0],
     ["La scissione dell'impero romano", 0],
@@ -731,7 +820,8 @@ const decks = {
     ["Avere dei busti di dubbia provenienza in casa", 0],
     [
       "Usare i soldi pubblici per insabbiare gli atti di pedofilia nella chiesa",
-      0],
+      0,
+    ],
     ["Fingersi un allievo dell'asilo quando si hanno 60 anni", 0],
     ["Evocare il drago shenron", 0],
     ["Avere 3 cromosomi 21", 0],
@@ -759,7 +849,8 @@ const decks = {
     ["Peppa pig alla griglia ", 0],
     [
       "Buttarsi da un pallazzo per testare l'aerodinamicità del proprio corpo",
-      0],
+      0,
+    ],
     ["Essere bravi a infornare come i tedeschi negli anni 40", 0],
     ["I bravi di don Rodrigo", 0],
     ["1000 bottiglie di baby oil", 0],
@@ -767,11 +858,13 @@ const decks = {
     ["Usare un calibro per misurarsi il cazzo", 0],
     [
       "Sperimentare il paradosso del gatto di Schrodinger con il tuo cuginetto ",
-      0],
+      0,
+    ],
     ["I compagni di merende", 0],
     [
       "Dare un grissino sporco di merda a un bambino spacciandolo per un Mikado ",
-      0],
+      0,
+    ],
     ["L'elicottero col cazzo", 0],
     ["Evocare Belzebub", 0],
     ["Vestirsi da nazista ad un gay pride ", 0],
@@ -782,7 +875,8 @@ const decks = {
     ["Essere l'assassino di Hitler", 0],
     [
       "Usare la moltiplicazione del corpo di Naruto per entrare in tutti i buchi",
-      0],
+      0,
+    ],
     ["Vivere tutta la vita con un vibratore nel culo", 0],
     ["Anna calda a 3 cm da te", 0],
     ["Ha fatto anche cose buone", 0],
@@ -823,7 +917,8 @@ const decks = {
     ["La durezza del mio pene quando canta Annalisa ", 0],
     [
       "Calcolare la dilatazione anale dopo il fisting con il teorema di Pitagora",
-      0],
+      0,
+    ],
     ["Una cenetta romantica ispirata a Jeffrey Dahmer", 0],
     ["Usare la borra al posto della crema pasticcera ", 0],
     ["Chiedere a un bimbo orfano dove sono i suoi genitori", 0],
@@ -855,7 +950,8 @@ const decks = {
     ["Dirigere un bombardamento aereo contro la Moldavia ", 0],
     [
       "Risolvere il problema dell'immigrazione in Italia cancellando Lampedusa",
-      0],
+      0,
+    ],
     ["I bambini nascosti sotto il letto di Michael Jackson", 0],
     ["L'umidità della mia figa quando vedo Conte", 0],
     ["Scambiare pedopornografia nel parchetto cittadino", 0],
@@ -872,10 +968,12 @@ const decks = {
     ["Morire di diarrea fulminea", 0],
     [
       "Tornare indietro nel tempo solo per farsi fare un autografo da Hitler ",
-      0],
+      0,
+    ],
     [
       "Tornare indietro nel tempo per farsi fare un pompino da Marilyn Monroe",
-      0],
+      0,
+    ],
     ["Fumare la marijuana dal culo", 0],
     ["Sniffare le ceneri della nonna", 0],
     ["Usare le ceneri del cane come parmigiano ", 0],
@@ -892,7 +990,8 @@ const decks = {
     ["Spiegare l'apologia cristiana suonando una vuvuzela", 0],
     [
       "Fabrizio Corona che si incula con un complesso sistema di leve e specchi",
-      0],
+      0,
+    ],
     ["Una ninna nanna suonata con un flauto dolce nel naso", 0],
     ["Uno spiedino ti topi fritti in pastella", 0],
     ["Strozzarsi con una mozzarella aromatizzata all'uranio ", 0],
@@ -902,7 +1001,8 @@ const decks = {
     ["Gesù inculato dalla Madonna con un dildo rosa", 0],
     [
       "Usare la cocaina al posto della farina per preparare una torta per la vendita di beneficenza.",
-      0],
+      0,
+    ],
     ["L'ospedale pediatrico sotto attacco di israele ", 0],
     ["Un Charizard con tendenze neonaziste", 0],
     ["Sparare mensole dagli occhi", 0],
@@ -920,7 +1020,8 @@ const decks = {
     ["Bazinga", 0],
     [
       "Usare il mantello dell'invisibilità per segarsi nello spogliatoio delle ragazze",
-      0],
+      0,
+    ],
     ["Accorgersi di avere tendenze necrofile", 0],
     ["Attraversare l'autostrada per catturare un Pikachu ", 0],
     ["Uccidere il proprio figlio a badilate perché gli piace Peppa Pig", 0],
@@ -935,7 +1036,8 @@ const decks = {
     ["Un cosplay hentai", 0],
     [
       "Michael Jackson che si stringe le mani per ricreare la pubblicità dei ringo",
-      0],
+      0,
+    ],
     ["Igniettarsi la candeggina in vena per combattere il covid", 0],
     ["Il mio cazzo come emoji", 0],
     ["L'occhio di Sauron", 0],
@@ -947,7 +1049,8 @@ const decks = {
     ["Usare Steve Hawking per il live action di cars", 0],
     [
       "dio bestia da soma in minia toma in minia soma in minia mosa in miniatura",
-      0],
+      0,
+    ],
     ["Utilizzare una moka per costruire un reattore nucleare", 0],
     ["L'odore di pube di topo", 0],
     ["I dossi davanti all'asilo", 0],
@@ -1011,7 +1114,8 @@ const decks = {
     ["Correre scalzi nei prati sotto l'effetto di droghe pesanti ", 0],
     [
       "Infilare le palle in un orologio a pendolo che ha al posto del pendolo un ascia",
-      0],
+      0,
+    ],
     ["Smerdarsi nei calzoni in classe", 0],
     ["Pomiciare con i paramedici venuti a soccorrere tuo padre", 0],
     ["Vomitare vodka e funghetti allucinogeni in corsia 2 al conad", 0],
@@ -1058,15 +1162,16 @@ const decks = {
 };
 
 const nounsAndAdjectives = {
-  names : [
+  names: [
     "Gianfranco",
     "Petunia",
     "Matilda",
     "Gesù",
     "Patrizia",
-    "Anastasia",
+    "Anastasia ",
     "Tancredi",
     "Geltrude",
+    "San bartolomeo",
     "Stefania",
     "Sandrina",
     "Gervasio",
@@ -1079,15 +1184,24 @@ const nounsAndAdjectives = {
     "Ermenegilda",
     "Loretta",
     "Juan",
+    "Gonzago",
     "Carmeletto",
+    "Clarissa",
     "Asdrubale",
     "Osvaldo",
     "Moreno",
     "Gilberto",
-    "Lucresia"
+    "Lucresia",
+    "Esposito",
+    "Proserpina",
+    "Annunziata",
+    "Pasqualino",
+    "Simonetta",
+    "Giovanni",
   ],
-  adjectives : [
+  adjectives: [
     "Vibrante",
+    "Caliente",
     "Eccitante",
     "Segante",
     "Scopante",
@@ -1111,6 +1225,12 @@ const nounsAndAdjectives = {
     "Petulante",
     "Pizzicolante",
     "Orgasmante",
-    "Vegetante"
-  ]
-}
+    "Vegetante",
+    "Indulgente",
+    "Bocca larga",
+    "Culo stretto",
+    "Mani rapide",
+    "Imprecante",
+    "Salivante",
+  ],
+};
