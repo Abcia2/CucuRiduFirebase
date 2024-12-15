@@ -14,7 +14,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
-const pfpCount = 26;
+const pfpCount = 27;
 
 // DOM Elements
 const initialScreen = document.getElementById("initial-screen");
