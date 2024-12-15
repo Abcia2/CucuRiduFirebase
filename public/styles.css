@@ -238,6 +238,88 @@ body {
   }
 }
 
+.AnswerNumberSelectorRow {
+  display: flex;
+  width: 60%;
+  height: 100px;
+  justify-content: space-evenly;
+  overflow-x: auto;
+}
+
+.AnswerNumberSelectorRow::-webkit-scrollbar {
+  width: 5px;
+}
+
+.AnswerNumberSelectorRow::-webkit-scrollbar {
+  -webkit-appearance: scrollbar;
+}
+
+.AnswerNumberSelectorPill{
+  padding: 10px 20px;
+  margin: 5px;
+  height: 40px;
+  background-color: #DC557D;
+  border-radius: 25px;
+  white-space: nowrap;
+}
+
+.AnswerNumberSelectorPill:hover{
+  opacity: 80%;
+}
+
+.AnswerNumberSelectorPill:active{
+  opacity: 60%;
+}
+
+.SelectedPill{
+  background-color: #e77094;
+}
+
+.AnswerSelectorCon{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.AnswerSelectorCard{
+  width: 90%;
+  background-color: #ffedf3;
+  padding: 35px;
+  border-radius: 15px;
+  margin: 10px;
+}
+.SectecAnswerCard{
+  background-color: #c5eba7;
+}
+
+@media screen and (orientation: portrait) {
+  .AnswerNumberSelectorRow{
+    display: flex;
+    width: 100%;
+    justify-content: space-evenly;
+  }
+}
+
+/*
+<div class="AnswerSelectorCon">
+        <div class="AnswerNumberSelectorRow">
+          <div class="AnswerNumberSelectorPill" id="AnswerNumberSelectorPill1">Space 1</div>
+        </div>
+        <div class="AnswerSelectorCon" id="AnswerSelectorCon">
+          <div class="AnswerSelectorCard" id="AnswerSelectorCard1">
+            <h3 class="MediumText BlackText"> ✦ Risposta </h3>
+            <h2 class="SemiBigText BlackText" >Una partita a Mario Cart irl con Steven Hawkins</h2>
+          </div>
+          <div class="AnswerSelectorCard" id="AnswerSelectorCard1">
+            <h3 class="MediumText BlackText"> ✦ Risposta </h3>
+            <h2 class="SemiBigText BlackText" >Una pastiglia di cianuro alla fragola per una dolce morte</h2>
+          </div>
+        </div>
+        */
+
 
 
 
