@@ -29,8 +29,12 @@ const FirstPage = document.getElementById("FirstPage");
 
 const WaitingToStartPage = document.getElementById("WaitingToStartPage");
 
-const ChooseAnswersPagePlayer = document.getElementById("ChooseAnswersPagePlayer");
-const ChooseAnswersPageQuestioner = document.getElementById("ChooseAnswersPageQuestioner");
+const ChooseAnswersPagePlayer = document.getElementById(
+  "ChooseAnswersPagePlayer"
+);
+const ChooseAnswersPageQuestioner = document.getElementById(
+  "ChooseAnswersPageQuestioner"
+);
 const ChooseAnswersPage = document.getElementById("ChooseAnswersPage");
 
 // Buttons
@@ -40,7 +44,9 @@ const JoinRoomButton = document.getElementById("JoinRoomButton");
 // Other UI
 const PlayersPfpRowCon = document.getElementById("PlayersPfpRowCon");
 
-const WaitToStartRoomCodeText = document.getElementById("WaitToStartRoomCodeText");
+const WaitToStartRoomCodeText = document.getElementById(
+  "WaitToStartRoomCodeText"
+);
 const WaitUiPlayersText = document.getElementById("WaitUiPlayersText");
 const WaitUiAdminText = document.getElementById("WaitUiAdminText");
 const WaitUiAdminButton = document.getElementById("WaitUiAdminButton");
@@ -88,16 +94,18 @@ function shuffleArray(array) {
 }
 
 // Authentication
-auth.signInAnonymously().then(() => {
-  playerId = auth.currentUser.uid; // Assicura che l'UID sia disponibile
-  console.log("Authenticated as:", playerId);
+auth
+  .signInAnonymously()
+  .then(() => {
+    playerId = auth.currentUser.uid; // Assicura che l'UID sia disponibile
+    console.log("Authenticated as:", playerId);
 
-  // Ora che l'UID è garantito, cambia schermata
-  ChangeScreen(LoadingPage, FirstPage);
-}).catch((error) => {
-  console.error("Authentication failed:", error);
-});
-
+    // Ora che l'UID è garantito, cambia schermata
+    ChangeScreen(LoadingPage, FirstPage);
+  })
+  .catch((error) => {
+    console.error("Authentication failed:", error);
+  });
 
 // Create Room
 CreateRoomButton.addEventListener("click", () => {
@@ -185,34 +193,38 @@ function startGame() {
   console.log("inizio");
 
   // Aggiorna la stanza impostando isWaiting a false e l'admin come currentQuestioner
-  roomRef.update({
-    isStartWaiting: false,
-    currentQuestioner: playerId,
-  });
-
-  // Assegna a tutti i giocatori le 11 carte risposta
-  assignInitialCardsToPlayers(roomCode);
-
-  // Pesca una domanda
-  const currentQuestion = drawQuestion();
-
-  // Aggiorna la stanza con i dettagli del round
-  roomRef.update({
-    isRoundPlaying: true,
-    roundPhase: 1,
-    currentRound: {
-      currentQuestion: currentQuestion, // ["domanda" , n spazi vuoti]
-      answers: [],
-      winner: null,
-    },
-  }).then(() => {
-    // Questo viene eseguito dopo che l'update è completato
-    console.log("Round Started");
-    ChangeScreen(WaitingToStartPage, ChooseAnswersPage);
-    loadChooseAnswersUI(); // Ora carica i dati solo dopo che sono stati salvati
-  }).catch((error) => {
-    console.error("Errore durante l'aggiornamento del round:", error);
-  });
+  roomRef
+    .update({
+      isStartWaiting: false,
+      currentQuestioner: playerId,
+    })
+    .then(() => {
+      // Assegna a tutti i giocatori le 11 carte risposta
+      return assignInitialCardsToPlayers(roomCode);
+    })
+    .then(() => {
+      // Pesca una domanda e aspetta che venga completata
+      return drawQuestion();
+    })
+    .then((currentQuestion) => {
+      // Aggiorna la stanza con i dettagli del round
+      return roomRef.update({
+        isRoundPlaying: true,
+        roundPhase: 1,
+        currentQuestion: currentQuestion,
+        currentAnswers: [],
+        currentWinner: null,
+      });
+    })
+    .then(() => {
+      console.log("Round Started");
+      console.log(currentQuestion);
+      ChangeScreen(WaitingToStartPage, ChooseAnswersPage);
+      loadChooseAnswersUI(); // Carica solo dopo che sono stati salvati i dati
+    })
+    .catch((error) => {
+      console.error("Errore durante l'aggiornamento del round:", error);
+    });
 }
 
 
@@ -221,9 +233,9 @@ function loadChooseAnswersUI() {
   const roomRef = db.ref("rooms/" + roomCode);
 
   // Recupera i dati della stanza
-  roomRef.once('value', (snapshot) => {
+  roomRef.once("value", (snapshot) => {
     const roomData = snapshot.val();
-    console.log(roomData);
+    console.log("roomDta: ",roomData);
 
     if (!roomData) {
       console.error("Room data not found!");
@@ -231,7 +243,7 @@ function loadChooseAnswersUI() {
     }
 
     const currentQuestioner = roomData.currentQuestioner; // Chi fa la domanda
-    const currentQuestion = roomData.currentRound?.currentQuestion; // La domanda attuale
+    const currentQuestion = roomData.currentQuestion; // La domanda attuale
 
     console.log("Auth UID:", playerId);
     console.log("Current Questioner:", currentQuestioner);
@@ -249,14 +261,9 @@ function loadChooseAnswersUI() {
     }
 
     // Aggiorna il testo della domanda
-    if (currentQuestion) {
       AnswerCardText.innerText = currentQuestion[0]; // Il primo elemento dell'array è la domanda
-    } else {
-      AnswerCardText.innerText = "No question available.";
-    }
   });
 }
-
 
 // Funzione per monitorare costantemente isRoundPlaying
 function monitorIsRoundPlaying() {
@@ -268,7 +275,7 @@ function monitorIsRoundPlaying() {
     if (snapshot.val() === true) {
       // Il round è iniziato, fai qualcosa per notificare i giocatori
       ChangeScreen(WaitingToStartPage, ChooseAnswersPage);
-      loadChooseAnswersUI()
+      loadChooseAnswersUI();
       console.log("RoundStarted");
     }
   });
@@ -295,7 +302,7 @@ function showQuestionAndAnswers() {
     }
   });
 }
-function LoadChooseAnswersScreen(){}
+function LoadChooseAnswersScreen() {}
 
 // Switch Screens
 function ChangeScreen(toHide, toShow) {
@@ -333,7 +340,6 @@ function monitorPlayersPfp() {
     }
   });
 }
-
 
 function showQuestionAndAnswers() {
   // Ottieni la stanza
@@ -400,24 +406,20 @@ function drawQuestion() {
   return roomRef
     .child("deckQuestions")
     .transaction((currentDeck) => {
-      //console.log("Current Questions Deck:", currentDeck);
       if (Array.isArray(currentDeck) && currentDeck.length > 0) {
-        // Estrai l'ultima domanda
         drawnQuestion = [...currentDeck.slice(-1)[0]];
-        return currentDeck.slice(0, -1); // Rimuovi la domanda pescata
+        return currentDeck.slice(0, -1);
       } else {
-        //console.error("No more questions in the deck or invalid deck structure!");
-        return currentDeck || []; // Ritorna il mazzo originale o un array vuoto
+        return currentDeck || [];
       }
     })
-    .then(() => {
-      return drawnQuestion; // Restituisci la domanda pescata
-    })
+    .then(() => drawnQuestion)
     .catch((error) => {
       console.error("Error drawing question:", error);
       return null;
     });
 }
+
 
 // Dai le carte ai giocatori
 function assignInitialCardsToPlayers(roomId) {
@@ -447,15 +449,11 @@ function assignInitialCardsToPlayers(roomId) {
     });
 }
 
-
-
 /* UI */
 // Buttons
 WaitUiAdminButton.addEventListener("click", () => {
   startGame();
 });
-
-
 
 // Carte e nomi
 /*Const decks (è troppo lunga per inserirla qui.)
