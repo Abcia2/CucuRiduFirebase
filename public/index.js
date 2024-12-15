@@ -58,21 +58,6 @@ const WaitUiAdminButton = document.getElementById("WaitUiAdminButton");
 const AnswerCardText = document.getElementById("AnswerCardText");
 const AnswerSelectorCon = document.getElementById("AnswerSelectorCon");
 
-const roomCodeInput = document.getElementById("room-code-input");
-const roomCodeDisplay = document.getElementById("room-code-display");
-const playerList = document.getElementById("player-list");
-const startGameBtn = document.getElementById("start-game-btn");
-const waitingMessage = document.getElementById("waiting-message");
-
-const currentQuestion = document.getElementById("current-question");
-const cardsContainer = document.getElementById("cards-container");
-const cards = document.getElementById("cards");
-const confirmResponseBtn = document.getElementById("confirm-response-btn");
-
-const responsesContainer = document.getElementById("responses-container");
-const responses = document.getElementById("responses");
-const chooseWinnerBtn = document.getElementById("choose-winner-btn");
-
 // State
 let roomCode = null;
 let playerId = null;
@@ -251,6 +236,7 @@ function loadChooseAnswersUI() {
   roomRef.once("value", (snapshot) => {
     const roomData = snapshot.val();
     console.log("roomData: ", roomData);
+    console.log("current question: ", roomData.currentQuestion);
 
     if (!roomData) {
       console.error("Room data not found!");
@@ -258,7 +244,7 @@ function loadChooseAnswersUI() {
     }
 
     const currentQuestioner = roomData.currentQuestioner; // Chi fa la domanda
-    const currentQuestion = roomData.currentRound?.currentQuestion; // La domanda attuale
+    const currentQuestion = roomData.currentQuestion; // La domanda attuale
 
     console.log("Auth UID:", playerId);
     console.log("Current Questioner:", currentQuestioner);
